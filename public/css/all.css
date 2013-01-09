@@ -1,0 +1,116 @@
+body{
+	background: #eda linear-gradient(-45deg , #eda, #fff) left top no-repeat fixed;
+	padding: 0px 20px;
+	font: 12px/1.5 Tahoma;
+}
+.sidebar{
+	float: left;
+	width: 180px;
+	padding: 20px 10px 10px;
+	background-color: rgba(0, 16, 0, 0.05);
+}
+.sidebar form{
+
+}
+.sidebar form dt{
+	color: #999;
+}
+.sidebar form dd{
+	margin-left: 0px;
+}
+.sidebar form input[type=text]{
+	font: italic 15px/1.5 Georgia;
+	padding: 5px 10px;
+	border: 1px solid #999;
+	color: #999;
+}
+.sidebar form button{
+	margin-top: 5px;
+	border: 1px solid #999;
+	color: #999;
+	padding: 5px;
+	background-color: #eee;
+	cursor: pointer;
+}
+.sidebar .list{
+	margin-top: 10px;
+}
+.sidebar .list li{
+	margin: 10px 0px;
+	text-align: center;
+}
+.sidebar .list li a{
+	display: inline-block;
+	margin: 2px;
+}
+.sidebar .list li a:hover,
+.sidebar .list li a:active,
+.sidebar .list li.selected a,
+.sidebar .list li a:visited{
+	margin:0px;
+	padding: 1px;
+	border: 1px solid #999;
+}
+.sidebar .list li a:visited{
+	/*border-color:#bbb;*/
+}
+.sidebar .list li a:active,
+.sidebar .list li.selected a{
+	border-color:#555;
+}
+
+.floatWrap{
+	margin-left: 230px;
+	padding: 20px 0px;
+}
+.floatWrap>.content{
+	display: table;
+	/*width: 100%;*/
+	table-layout: fixed;
+	padding: 20px;
+	border: 1px dotted #fff;
+	background-color: rgba(255,255,255,0.3);
+	color: #999;
+	margin: 0px auto;
+	visibility: hidden;
+}
+.floatWrap>.content.isset{
+	visibility: visible;
+}
+.floatWrap>.content:after{
+	content:"";
+	display:block;
+	height:0;
+	overflow: hidden;
+	clear:both;
+}
+.floatWrap>.content h1{
+	margin: 10px 0px;
+	font: 25px/1.5 Georgia;
+	color: #666;
+}
+.floatWrap>.content .descr{
+	margin: 10px 0px;
+	font-style: italic;
+	font-family: Georgia;
+}
+.floatWrap>.content .lnks{
+	display: inline;
+}
+.floatWrap>.content .plink{
+	display: inline;
+}
+.floatWrap>.content .lnks a{
+	color: darkcyan;
+}
+.floatWrap>.content .lnks .plnk:after{
+	content: ", ";
+}
+.floatWrap>.content .lnks .plnk:last-of-type:after{
+	content: "";
+}
+.floatWrap>.content .bigImg{
+	margin-top: 10px;
+	padding: 2px;
+	border: 2px solid #bbb;
+}

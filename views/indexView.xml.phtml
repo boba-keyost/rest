@@ -1,0 +1,12 @@
+<?php
+
+$xml	=	new SimpleXMLElement('<root></root>');
+$docRoot = $xml->addChild('items');
+$content	= $this->getResponse()->getContents();
+if(!empty($content))
+{
+	recursiveBuildXML($docRoot, $content);
+}
+	//$xml->sss="ggg";
+echo(str_replace('<?xml version="1.0"?>', '<?xml version="1.0" encoding="'.$this->getResponse()->getCharset().'"?>',$xml->asXML()));
+?>
