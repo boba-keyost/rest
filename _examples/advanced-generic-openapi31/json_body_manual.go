@@ -13,7 +13,7 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	"github.com/swaggest/jsonschema-go"
-	"github.com/swaggest/rest/request"
+	"github.com/boba-keyost/rest/request"
 	"github.com/swaggest/usecase"
 )
 
@@ -25,14 +25,16 @@ func jsonBodyManual() usecase.Interactor {
 		JSONPayload
 	}
 
-	u := usecase.NewInteractor(func(ctx context.Context, in inputWithJSON, out *outputWithJSON) (err error) {
-		out.Query = in.Query
-		out.Header = in.Header
-		out.Path = in.Path
-		out.JSONPayload = in.JSONPayload
+	u := usecase.NewInteractor(
+		func(ctx context.Context, in inputWithJSON, out *outputWithJSON) (err error) {
+			out.Query = in.Query
+			out.Header = in.Header
+			out.Path = in.Path
+			out.JSONPayload = in.JSONPayload
 
-		return nil
-	})
+			return nil
+		},
+	)
 
 	u.SetTitle("Request With JSON Body and manual decoder")
 	u.SetDescription("Request with JSON body and query/header/path params, response with JSON body and data from request.")

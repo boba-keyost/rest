@@ -9,8 +9,8 @@ import (
 	"time"
 
 	"github.com/swaggest/openapi-go/openapi3"
-	"github.com/swaggest/rest/response/gzip"
-	"github.com/swaggest/rest/web"
+	"github.com/boba-keyost/rest/response/gzip"
+	"github.com/boba-keyost/rest/web"
 	swgui "github.com/swaggest/swgui/v5emb"
 	"github.com/swaggest/usecase"
 	"github.com/swaggest/usecase/status"
@@ -47,22 +47,24 @@ func main() {
 	}
 
 	// Create use case interactor with references to input/output types and interaction function.
-	u := usecase.NewIOI(new(helloInput), new(helloOutput), func(ctx context.Context, input, output interface{}) error {
-		var (
-			in  = input.(*helloInput)
-			out = output.(*helloOutput)
-		)
+	u := usecase.NewIOI(
+		new(helloInput), new(helloOutput), func(ctx context.Context, input, output interface{}) error {
+			var (
+				in  = input.(*helloInput)
+				out = output.(*helloOutput)
+			)
 
-		msg, available := messages[in.Locale]
-		if !available {
-			return status.Wrap(errors.New("unknown locale"), status.InvalidArgument)
-		}
+			msg, available := messages[in.Locale]
+			if !available {
+				return status.Wrap(errors.New("unknown locale"), status.InvalidArgument)
+			}
 
-		out.Message = fmt.Sprintf(msg, in.Name)
-		out.Now = time.Now()
+			out.Message = fmt.Sprintf(msg, in.Name)
+			out.Now = time.Now()
 
-		return nil
-	})
+			return nil
+		},
+	)
 
 	// Describe use case interactor.
 	u.SetTitle("Greeter")

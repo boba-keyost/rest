@@ -13,14 +13,14 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/swaggest/openapi-go/openapi3"
-	"github.com/swaggest/rest"
-	"github.com/swaggest/rest/chirouter"
-	"github.com/swaggest/rest/jsonschema"
-	"github.com/swaggest/rest/nethttp"
-	"github.com/swaggest/rest/openapi"
-	"github.com/swaggest/rest/request"
-	"github.com/swaggest/rest/response"
-	"github.com/swaggest/rest/web"
+	"github.com/boba-keyost/rest"
+	"github.com/boba-keyost/rest/chirouter"
+	"github.com/boba-keyost/rest/jsonschema"
+	"github.com/boba-keyost/rest/nethttp"
+	"github.com/boba-keyost/rest/openapi"
+	"github.com/boba-keyost/rest/request"
+	"github.com/boba-keyost/rest/response"
+	"github.com/boba-keyost/rest/web"
 	"github.com/swaggest/usecase"
 )
 
@@ -37,9 +37,11 @@ type fileReqTest struct {
 }
 
 func TestDecoder_Decode_fileUploadOptional(t *testing.T) {
-	u := usecase.NewIOI(new(ReqEmb), nil, func(_ context.Context, _, _ interface{}) error {
-		return nil
-	})
+	u := usecase.NewIOI(
+		new(ReqEmb), nil, func(_ context.Context, _, _ interface{}) error {
+			return nil
+		},
+	)
 
 	s := web.NewService(openapi3.NewReflector())
 	s.Post("/", u)
@@ -88,40 +90,42 @@ func TestDecoder_Decode_fileUploadTag(t *testing.T) {
 	}{}
 
 	u.Input = new(fileReqTest)
-	u.Interactor = usecase.Interact(func(_ context.Context, input, _ interface{}) error {
-		in, ok := input.(*fileReqTest)
-		assert.True(t, ok)
+	u.Interactor = usecase.Interact(
+		func(_ context.Context, input, _ interface{}) error {
+			in, ok := input.(*fileReqTest)
+			assert.True(t, ok)
 
-		assert.Equal(t, "def", in.Simple)
+			assert.Equal(t, "def", in.Simple)
 
-		assert.NotNil(t, in.Upload)
-		assert.NotNil(t, in.UploadHeader)
-		assert.Equal(t, "my.csv", in.UploadHeader.Filename)
-		assert.Equal(t, int64(6), in.UploadHeader.Size)
-		content, err := ioutil.ReadAll(in.Upload)
-		assert.NoError(t, err)
-		assert.NoError(t, in.Upload.Close())
-		assert.Equal(t, "Hello!", string(content))
+			assert.NotNil(t, in.Upload)
+			assert.NotNil(t, in.UploadHeader)
+			assert.Equal(t, "my.csv", in.UploadHeader.Filename)
+			assert.Equal(t, int64(6), in.UploadHeader.Size)
+			content, err := ioutil.ReadAll(in.Upload)
+			assert.NoError(t, err)
+			assert.NoError(t, in.Upload.Close())
+			assert.Equal(t, "Hello!", string(content))
 
-		require.Len(t, in.Uploads, 2)
-		require.Len(t, in.UploadsHeaders, 2)
-		assert.Equal(t, "my1.csv", in.UploadsHeaders[0].Filename)
-		assert.Equal(t, int64(7), in.UploadsHeaders[0].Size)
-		assert.Equal(t, "my2.csv", in.UploadsHeaders[1].Filename)
-		assert.Equal(t, int64(7), in.UploadsHeaders[1].Size)
+			require.Len(t, in.Uploads, 2)
+			require.Len(t, in.UploadsHeaders, 2)
+			assert.Equal(t, "my1.csv", in.UploadsHeaders[0].Filename)
+			assert.Equal(t, int64(7), in.UploadsHeaders[0].Size)
+			assert.Equal(t, "my2.csv", in.UploadsHeaders[1].Filename)
+			assert.Equal(t, int64(7), in.UploadsHeaders[1].Size)
 
-		content, err = ioutil.ReadAll(in.Uploads[0])
-		assert.NoError(t, err)
-		assert.NoError(t, in.Uploads[0].Close())
-		assert.Equal(t, "Hello1!", string(content))
+			content, err = ioutil.ReadAll(in.Uploads[0])
+			assert.NoError(t, err)
+			assert.NoError(t, in.Uploads[0].Close())
+			assert.Equal(t, "Hello1!", string(content))
 
-		content, err = ioutil.ReadAll(in.Uploads[1])
-		assert.NoError(t, err)
-		assert.NoError(t, in.Uploads[1].Close())
-		assert.Equal(t, "Hello2!", string(content))
+			content, err = ioutil.ReadAll(in.Uploads[1])
+			assert.NoError(t, err)
+			assert.NoError(t, in.Uploads[1].Close())
+			assert.Equal(t, "Hello2!", string(content))
 
-		return nil
-	})
+			return nil
+		},
+	)
 
 	h := nethttp.NewHandler(u)
 	r.Method(http.MethodPost, "/receive", h)

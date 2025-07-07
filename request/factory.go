@@ -14,8 +14,8 @@ import (
 	"github.com/swaggest/jsonschema-go"
 	"github.com/swaggest/openapi-go"
 	"github.com/swaggest/refl"
-	"github.com/swaggest/rest"
-	"github.com/swaggest/rest/nethttp"
+	"github.com/boba-keyost/rest"
+	"github.com/boba-keyost/rest/nethttp"
 )
 
 var _ DecoderMaker = &DecoderFactory{}
@@ -66,9 +66,11 @@ func NewDecoderFactory() *DecoderFactory {
 	defaultValDecoder := form.NewDecoder()
 	defaultValDecoder.SetNamespacePrefix("[")
 	defaultValDecoder.SetNamespaceSuffix("]")
-	defaultValDecoder.RegisterTagNameFunc(func(field reflect.StructField) string {
-		return field.Name
-	})
+	defaultValDecoder.RegisterTagNameFunc(
+		func(field reflect.StructField) string {
+			return field.Name
+		},
+	)
 
 	df.defaultValDecoder = defaultValDecoder
 
@@ -176,7 +178,10 @@ func initDecoder(input interface{}) decoder {
 	return d
 }
 
-func (df *DecoderFactory) prepareCustomMapping(input interface{}, customMapping rest.RequestMapping) rest.RequestMapping {
+func (df *DecoderFactory) prepareCustomMapping(
+	input interface{},
+	customMapping rest.RequestMapping,
+) rest.RequestMapping {
 	// Copy custom mapping to avoid mutability issues on original map.
 	cm := make(rest.RequestMapping, len(customMapping))
 	for k, v := range customMapping {
@@ -187,9 +192,11 @@ func (df *DecoderFactory) prepareCustomMapping(input interface{}, customMapping 
 	if hdm, exists := cm[rest.ParamInHeader]; !exists && refl.HasTaggedFields(input, string(rest.ParamInHeader)) {
 		hdm = make(map[string]string)
 
-		refl.WalkTaggedFields(reflect.ValueOf(input), func(_ reflect.Value, sf reflect.StructField, tag string) {
-			hdm[sf.Name] = http.CanonicalHeaderKey(tag)
-		}, string(rest.ParamInHeader))
+		refl.WalkTaggedFields(
+			reflect.ValueOf(input), func(_ reflect.Value, sf reflect.StructField, tag string) {
+				hdm[sf.Name] = http.CanonicalHeaderKey(tag)
+			}, string(rest.ParamInHeader),
+		)
 
 		cm[rest.ParamInHeader] = hdm
 	} else if exists {
@@ -200,9 +207,11 @@ func (df *DecoderFactory) prepareCustomMapping(input interface{}, customMapping 
 
 	fields := make(map[string]bool)
 
-	refl.WalkTaggedFields(reflect.ValueOf(input), func(_ reflect.Value, sf reflect.StructField, _ string) {
-		fields[sf.Name] = true
-	}, "")
+	refl.WalkTaggedFields(
+		reflect.ValueOf(input), func(_ reflect.Value, sf reflect.StructField, _ string) {
+			fields[sf.Name] = true
+		}, "",
+	)
 
 	// Check if there are non-existent fields in mapping.
 	var nonExistent []string
@@ -226,83 +235,89 @@ func (df *DecoderFactory) prepareCustomMapping(input interface{}, customMapping 
 // jsonParams configures custom decoding for parameters with JSON struct values.
 func (df *DecoderFactory) jsonParams(formDecoder *form.Decoder, in rest.ParamIn, input interface{}) {
 	// Check fields for struct values with json tags. E.g. query parameter with json value.
-	refl.WalkTaggedFields(reflect.ValueOf(input), func(v reflect.Value, sf reflect.StructField, _ string) {
-		// Skip unexported fields.
-		if sf.PkgPath != "" {
-			return
-		}
+	refl.WalkTaggedFields(
+		reflect.ValueOf(input), func(v reflect.Value, sf reflect.StructField, _ string) {
+			// Skip unexported fields.
+			if sf.PkgPath != "" {
+				return
+			}
 
-		fieldVal := v.Interface()
+			fieldVal := v.Interface()
 
-		if sf.Tag.Get("collectionFormat") == "json" ||
-			(refl.HasTaggedFields(fieldVal, jsonTag) && !refl.HasTaggedFields(fieldVal, string(in))) {
-			// If value is a struct with `json` tags, custom decoder unmarshals json
-			// from a string value into a struct.
-			formDecoder.RegisterFunc(func(s string) (interface{}, error) {
-				var err error
+			if sf.Tag.Get("collectionFormat") == "json" ||
+				(refl.HasTaggedFields(fieldVal, jsonTag) && !refl.HasTaggedFields(fieldVal, string(in))) {
+				// If value is a struct with `json` tags, custom decoder unmarshals json
+				// from a string value into a struct.
+				formDecoder.RegisterFunc(
+					func(s string) (interface{}, error) {
+						var err error
 
-				f := reflect.New(sf.Type)
+						f := reflect.New(sf.Type)
 
-				if df.JSONReader != nil {
-					err = df.JSONReader(bytes.NewBufferString(s), f.Interface())
-				} else {
-					err = json.Unmarshal([]byte(s), f.Interface())
-				}
+						if df.JSONReader != nil {
+							err = df.JSONReader(bytes.NewBufferString(s), f.Interface())
+						} else {
+							err = json.Unmarshal([]byte(s), f.Interface())
+						}
 
-				if err != nil {
-					return nil, err
-				}
+						if err != nil {
+							return nil, err
+						}
 
-				return reflect.Indirect(f).Interface(), nil
-			}, fieldVal)
-		}
-	}, string(in))
+						return reflect.Indirect(f).Interface(), nil
+					}, fieldVal,
+				)
+			}
+		}, string(in),
+	)
 }
 
 func (df *DecoderFactory) makeDefaultDecoder(input interface{}, m *decoder) {
 	defaults := url.Values{}
 
-	refl.WalkFieldsRecursively(reflect.ValueOf(input), func(v reflect.Value, sf reflect.StructField, path []reflect.StructField) {
-		var key string
+	refl.WalkFieldsRecursively(
+		reflect.ValueOf(input), func(v reflect.Value, sf reflect.StructField, path []reflect.StructField) {
+			var key string
 
-		for _, p := range path {
-			if p.Anonymous {
-				continue
+			for _, p := range path {
+				if p.Anonymous {
+					continue
+				}
+
+				if key == "" {
+					key = p.Name
+				} else {
+					key += "[" + p.Name + "]"
+				}
 			}
 
 			if key == "" {
-				key = p.Name
+				key = sf.Name
 			} else {
-				key += "[" + p.Name + "]"
-			}
-		}
-
-		if key == "" {
-			key = sf.Name
-		} else {
-			key += "[" + sf.Name + "]"
-		}
-
-		if d, ok := sf.Tag.Lookup(defaultTag); ok { //nolint:nestif
-			defaults[key] = []string{d}
-		} else if df.JSONSchemaReflector != nil && v.CanInterface() {
-			vi := v.Interface()
-
-			s, err := df.JSONSchemaReflector.Reflect(vi)
-			if err != nil {
-				panic(err.Error())
+				key += "[" + sf.Name + "]"
 			}
 
-			if s.Default != nil {
-				d, err := json.Marshal(s.Default)
+			if d, ok := sf.Tag.Lookup(defaultTag); ok { //nolint:nestif
+				defaults[key] = []string{d}
+			} else if df.JSONSchemaReflector != nil && v.CanInterface() {
+				vi := v.Interface()
+
+				s, err := df.JSONSchemaReflector.Reflect(vi)
 				if err != nil {
 					panic(err.Error())
 				}
 
-				defaults[key] = []string{strings.Trim(string(d), `"`)}
+				if s.Default != nil {
+					d, err := json.Marshal(s.Default)
+					if err != nil {
+						panic(err.Error())
+					}
+
+					defaults[key] = []string{strings.Trim(string(d), `"`)}
+				}
 			}
-		}
-	})
+		},
+	)
 
 	if len(defaults) == 0 {
 		return
@@ -310,9 +325,11 @@ func (df *DecoderFactory) makeDefaultDecoder(input interface{}, m *decoder) {
 
 	dec := df.defaultValDecoder
 
-	m.decoders = append(m.decoders, func(_ *http.Request, v interface{}, _ rest.Validator) error {
-		return dec.Decode(v, defaults)
-	})
+	m.decoders = append(
+		m.decoders, func(_ *http.Request, v interface{}, _ rest.Validator) error {
+			return dec.Decode(v, defaults)
+		},
+	)
 	m.in = append(m.in, defaultTag)
 }
 
@@ -329,14 +346,16 @@ func (df *DecoderFactory) makeCustomMappingDecoder(customMapping rest.RequestMap
 			mm[k] = v
 		}
 
-		dec.RegisterTagNameFunc(func(field reflect.StructField) string {
-			n := mm[field.Name]
-			if n == "" && !field.Anonymous {
-				return "-"
-			}
+		dec.RegisterTagNameFunc(
+			func(field reflect.StructField) string {
+				n := mm[field.Name]
+				if n == "" && !field.Anonymous {
+					return "-"
+				}
 
-			return n
-		})
+				return n
+			},
+		)
 
 		for _, c := range df.customDecoders {
 			dec.RegisterFunc(c.fn, c.types...)
@@ -355,8 +374,10 @@ func (df *DecoderFactory) RegisterFunc(fn form.DecodeFunc, types ...interface{})
 
 	df.defaultValDecoder.RegisterFunc(fn, types...)
 
-	df.customDecoders = append(df.customDecoders, customDecoder{
-		fn:    fn,
-		types: types,
-	})
+	df.customDecoders = append(
+		df.customDecoders, customDecoder{
+			fn:    fn,
+			types: types,
+		},
+	)
 }

@@ -2,7 +2,7 @@
 package schema
 
 import (
-	"github.com/swaggest/rest/openapi"
+	"github.com/boba-keyost/rest/openapi"
 )
 
 // SetupOpenAPICollector sets up API documentation collector.

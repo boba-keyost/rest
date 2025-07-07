@@ -3,7 +3,7 @@ package usecase
 import (
 	"context"
 
-	"github.com/swaggest/rest/_examples/task-api/internal/domain/task"
+	"github.com/boba-keyost/rest/_examples/task-api/internal/domain/task"
 	"github.com/swaggest/usecase"
 	"github.com/swaggest/usecase/status"
 )
@@ -16,19 +16,21 @@ type updateTask struct {
 // UpdateTask creates usecase interactor.
 func UpdateTask(
 	deps interface {
-		TaskUpdater() task.Updater
-	},
+	TaskUpdater() task.Updater
+},
 ) usecase.Interactor {
-	u := usecase.NewIOI(new(updateTask), nil, func(ctx context.Context, input, _ interface{}) error {
-		var (
-			in  = input.(*updateTask)
-			err error
-		)
+	u := usecase.NewIOI(
+		new(updateTask), nil, func(ctx context.Context, input, _ interface{}) error {
+			var (
+				in  = input.(*updateTask)
+				err error
+			)
 
-		err = deps.TaskUpdater().Update(ctx, in.Identity, in.Value)
+			err = deps.TaskUpdater().Update(ctx, in.Identity, in.Value)
 
-		return err
-	})
+			return err
+		},
+	)
 
 	u.SetDescription("Update existing task.")
 	u.SetExpectedErrors(

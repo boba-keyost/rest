@@ -7,7 +7,7 @@ import (
 	"github.com/swaggest/openapi-go"
 	"github.com/swaggest/openapi-go/openapi3"
 	"github.com/swaggest/refl"
-	"github.com/swaggest/rest"
+	"github.com/boba-keyost/rest"
 )
 
 // OptionsMiddleware applies options to encountered nethttp.Handler.
@@ -42,13 +42,15 @@ func AnnotateOperation(annotations ...func(operation *openapi3.Operation) error)
 		for _, a := range annotations {
 			a := a
 
-			h.OpenAPIAnnotations = append(h.OpenAPIAnnotations, func(oc openapi.OperationContext) error {
-				if o3, ok := oc.(openapi3.OperationExposer); ok {
-					return a(o3.Operation())
-				}
+			h.OpenAPIAnnotations = append(
+				h.OpenAPIAnnotations, func(oc openapi.OperationContext) error {
+					if o3, ok := oc.(openapi3.OperationExposer); ok {
+						return a(o3.Operation())
+					}
 
-				return nil
-			})
+					return nil
+				},
+			)
 		}
 	}
 }
@@ -56,13 +58,17 @@ func AnnotateOperation(annotations ...func(operation *openapi3.Operation) error)
 // RequestBodyContent enables string request body with content type (e.g. text/plain).
 func RequestBodyContent(contentType string) func(h *Handler) {
 	return func(h *Handler) {
-		h.OpenAPIAnnotations = append(h.OpenAPIAnnotations, func(oc openapi.OperationContext) error {
-			oc.AddReqStructure(nil, func(cu *openapi.ContentUnit) {
-				cu.ContentType = contentType
-			})
+		h.OpenAPIAnnotations = append(
+			h.OpenAPIAnnotations, func(oc openapi.OperationContext) error {
+				oc.AddReqStructure(
+					nil, func(cu *openapi.ContentUnit) {
+						cu.ContentType = contentType
+					},
+				)
 
-			return nil
-		})
+				return nil
+			},
+		)
 	}
 }
 
@@ -96,9 +102,11 @@ func RequestMapping(v interface{}) func(h *Handler) {
 		} {
 			mm := make(map[string]string)
 
-			refl.WalkTaggedFields(reflect.ValueOf(v), func(_ reflect.Value, sf reflect.StructField, tag string) {
-				mm[sf.Name] = tag
-			}, string(in))
+			refl.WalkTaggedFields(
+				reflect.ValueOf(v), func(_ reflect.Value, sf reflect.StructField, tag string) {
+					mm[sf.Name] = tag
+				}, string(in),
+			)
 
 			if len(mm) > 0 {
 				m[in] = mm
@@ -124,9 +132,11 @@ func ResponseHeaderMapping(v interface{}) func(h *Handler) {
 
 		mm := make(map[string]string)
 
-		refl.WalkTaggedFields(reflect.ValueOf(v), func(_ reflect.Value, sf reflect.StructField, tag string) {
-			mm[sf.Name] = tag
-		}, "header")
+		refl.WalkTaggedFields(
+			reflect.ValueOf(v), func(_ reflect.Value, sf reflect.StructField, tag string) {
+				mm[sf.Name] = tag
+			}, "header",
+		)
 
 		if len(mm) > 0 {
 			h.RespHeaderMapping = mm

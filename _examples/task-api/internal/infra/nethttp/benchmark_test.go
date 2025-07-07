@@ -11,10 +11,10 @@ import (
 	"github.com/bool64/httptestbench"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"github.com/swaggest/rest/_examples/task-api/internal/domain/task"
-	"github.com/swaggest/rest/_examples/task-api/internal/infra"
-	"github.com/swaggest/rest/_examples/task-api/internal/infra/nethttp"
-	"github.com/swaggest/rest/_examples/task-api/internal/infra/service"
+	"github.com/boba-keyost/rest/_examples/task-api/internal/domain/task"
+	"github.com/boba-keyost/rest/_examples/task-api/internal/infra"
+	"github.com/boba-keyost/rest/_examples/task-api/internal/infra/nethttp"
+	"github.com/boba-keyost/rest/_examples/task-api/internal/infra/service"
 	"github.com/valyala/fasthttp"
 )
 
@@ -31,7 +31,8 @@ func Benchmark_notFoundSrv(b *testing.B) {
 	srv := httptest.NewServer(nethttp.NewRouter(l))
 	defer srv.Close()
 
-	httptestbench.RoundTrip(b, 50,
+	httptestbench.RoundTrip(
+		b, 50,
 		func(i int, req *fasthttp.Request) {
 			req.SetRequestURI(srv.URL + "/dev/tasks/1")
 		},
@@ -57,7 +58,8 @@ func Benchmark_ok(b *testing.B) {
 	_, err := l.TaskCreator().Create(context.Background(), task.Value{Goal: "victory!"})
 	require.NoError(b, err)
 
-	httptestbench.RoundTrip(b, 50,
+	httptestbench.RoundTrip(
+		b, 50,
 		func(i int, req *fasthttp.Request) {
 			req.SetRequestURI(srv.URL + "/dev/tasks/1")
 		},
@@ -86,7 +88,8 @@ func Benchmark_invalidBody(b *testing.B) {
 
 	body := []byte(`{"goal":""}`)
 
-	httptestbench.RoundTrip(b, 50,
+	httptestbench.RoundTrip(
+		b, 50,
 		func(i int, req *fasthttp.Request) {
 			req.Header.SetMethod(http.MethodPut)
 			req.Header.SetContentType("application/json")

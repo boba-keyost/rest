@@ -9,10 +9,10 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/swaggest/openapi-go"
 	"github.com/swaggest/openapi-go/openapi3"
-	"github.com/swaggest/rest"
-	"github.com/swaggest/rest/gorillamux"
-	"github.com/swaggest/rest/nethttp"
-	"github.com/swaggest/rest/request"
+	"github.com/boba-keyost/rest"
+	"github.com/boba-keyost/rest/gorillamux"
+	"github.com/boba-keyost/rest/nethttp"
+	"github.com/boba-keyost/rest/request"
 )
 
 // Define request structure for your HTTP handler.
@@ -80,7 +80,11 @@ func (m *myHandler) SetupOpenAPIOperation(oc openapi.OperationContext) error {
 	oc.AddReqStructure(myRequest{})
 	oc.AddRespStructure(myResp{})
 	oc.AddRespStructure(nil, openapi.WithContentType("text/html"), openapi.WithHTTPStatus(http.StatusBadRequest))
-	oc.AddRespStructure(nil, openapi.WithContentType("text/html"), openapi.WithHTTPStatus(http.StatusInternalServerError))
+	oc.AddRespStructure(
+		nil,
+		openapi.WithContentType("text/html"),
+		openapi.WithHTTPStatus(http.StatusInternalServerError),
+	)
 
 	return nil
 }
@@ -93,8 +97,10 @@ func ExampleNewOpenAPICollector() {
 	router.Handle("/foo/{path1}/bar/{path2}", newMyHandler()).Methods(http.MethodGet)
 
 	// If handler does not implement gorillamux.OpenAPIPreparer, it will be exposed as incomplete.
-	router.Handle("/uninstrumented-handler/{path-item}",
-		http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {})).Methods(http.MethodPost)
+	router.Handle(
+		"/uninstrumented-handler/{path-item}",
+		http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {}),
+	).Methods(http.MethodPost)
 
 	// Setup OpenAPI schema.
 	refl := openapi3.NewReflector()

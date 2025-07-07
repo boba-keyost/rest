@@ -8,10 +8,10 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"github.com/swaggest/rest/jsonschema"
-	"github.com/swaggest/rest/nethttp"
-	"github.com/swaggest/rest/openapi"
-	"github.com/swaggest/rest/response"
+	"github.com/boba-keyost/rest/jsonschema"
+	"github.com/boba-keyost/rest/nethttp"
+	"github.com/boba-keyost/rest/openapi"
+	"github.com/boba-keyost/rest/response"
 	"github.com/swaggest/usecase"
 )
 
@@ -32,14 +32,16 @@ func TestValidatorMiddleware(t *testing.T) {
 	}
 
 	u.Output = new(outputPort)
-	u.Interactor = usecase.Interact(func(_ context.Context, _, output interface{}) error {
-		out, ok := output.(*outputPort)
-		require.True(t, ok)
+	u.Interactor = usecase.Interact(
+		func(_ context.Context, _, output interface{}) error {
+			out, ok := output.(*outputPort)
+			require.True(t, ok)
 
-		*out = invalidOut
+			*out = invalidOut
 
-		return nil
-	})
+			return nil
+		},
+	)
 
 	h := nethttp.NewHandler(u)
 
@@ -55,14 +57,18 @@ func TestValidatorMiddleware(t *testing.T) {
 
 	wh.ServeHTTP(w, r)
 	assert.Equal(t, http.StatusInternalServerError, w.Code)
-	assert.Equal(t, `{"status":"INTERNAL","error":"internal: bad response: validation failed",`+
-		`"context":{"header:X-Name":["#: length must be >= 3, but got 2"]}}`+"\n", w.Body.String())
+	assert.Equal(
+		t, `{"status":"INTERNAL","error":"internal: bad response: validation failed",`+
+			`"context":{"header:X-Name":["#: length must be >= 3, but got 2"]}}`+"\n", w.Body.String(),
+	)
 
 	invalidOut.Name = "Jane"
 	w = httptest.NewRecorder()
 
 	wh.ServeHTTP(w, r)
 	assert.Equal(t, http.StatusInternalServerError, w.Code)
-	assert.Equal(t, `{"status":"INTERNAL","error":"internal: bad response: validation failed",`+
-		`"context":{"body":["#/items: minimum 3 items allowed, but found 1 items"]}}`+"\n", w.Body.String())
+	assert.Equal(
+		t, `{"status":"INTERNAL","error":"internal: bad response: validation failed",`+
+			`"context":{"body":["#/items: minimum 3 items allowed, but found 1 items"]}}`+"\n", w.Body.String(),
+	)
 }

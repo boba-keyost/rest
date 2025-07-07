@@ -8,8 +8,8 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"github.com/swaggest/rest/nethttp"
-	"github.com/swaggest/rest/response"
+	"github.com/boba-keyost/rest/nethttp"
+	"github.com/boba-keyost/rest/response"
 	"github.com/swaggest/usecase"
 )
 
@@ -25,12 +25,14 @@ func TestEncoderMiddleware(t *testing.T) {
 	}
 
 	u.Output = new(outputPort)
-	u.Interactor = usecase.Interact(func(_ context.Context, _, output interface{}) error {
-		output.(*outputPort).Name = "Jane"
-		output.(*outputPort).Items = []string{"one", "two", "three"}
+	u.Interactor = usecase.Interact(
+		func(_ context.Context, _, output interface{}) error {
+			output.(*outputPort).Name = "Jane"
+			output.(*outputPort).Items = []string{"one", "two", "three"}
 
-		return nil
-	})
+			return nil
+		},
+	)
 
 	h := nethttp.NewHandler(u)
 

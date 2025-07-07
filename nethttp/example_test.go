@@ -8,8 +8,8 @@ import (
 	"github.com/swaggest/assertjson"
 	oapi "github.com/swaggest/openapi-go"
 	"github.com/swaggest/openapi-go/openapi3"
-	"github.com/swaggest/rest/nethttp"
-	"github.com/swaggest/rest/web"
+	"github.com/boba-keyost/rest/nethttp"
+	"github.com/boba-keyost/rest/web"
 	"github.com/swaggest/usecase"
 )
 
@@ -19,25 +19,31 @@ func ExampleSecurityMiddleware() {
 
 	// Configure an actual security middleware.
 	serviceTokenAuth := func(h http.Handler) http.Handler {
-		return http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
-			if req.Header.Get("Authorization") != "<secret>" {
-				http.Error(w, "Authentication failed.", http.StatusUnauthorized)
+		return http.HandlerFunc(
+			func(w http.ResponseWriter, req *http.Request) {
+				if req.Header.Get("Authorization") != "<secret>" {
+					http.Error(w, "Authentication failed.", http.StatusUnauthorized)
 
-				return
-			}
+					return
+				}
 
-			h.ServeHTTP(w, req)
-		})
+				h.ServeHTTP(w, req)
+			},
+		)
 	}
 
 	// Configure documentation middleware to describe actual security middleware.
-	serviceTokenDoc := nethttp.APIKeySecurityMiddleware(s.OpenAPICollector,
-		"serviceToken", "Authorization", oapi.InHeader, "Service token.")
+	serviceTokenDoc := nethttp.APIKeySecurityMiddleware(
+		s.OpenAPICollector,
+		"serviceToken", "Authorization", oapi.InHeader, "Service token.",
+	)
 
-	u := usecase.NewIOI(nil, nil, func(ctx context.Context, input, output interface{}) error {
-		// Do something.
-		return nil
-	})
+	u := usecase.NewIOI(
+		nil, nil, func(ctx context.Context, input, output interface{}) error {
+			// Do something.
+			return nil
+		},
+	)
 
 	// Add use case handler to router with security middleware.
 	s.

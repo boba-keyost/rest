@@ -67,8 +67,8 @@ import (
 	"github.com/go-chi/chi/v5"
 	jwtauth "github.com/go-chi/jwtauth/v5"
 	"github.com/swaggest/openapi-go/openapi31"
-	"github.com/swaggest/rest/nethttp"
-	"github.com/swaggest/rest/web"
+	"github.com/boba-keyost/rest/nethttp"
+	"github.com/boba-keyost/rest/web"
 	"github.com/swaggest/usecase"
 )
 
@@ -100,30 +100,39 @@ func Get() usecase.Interactor {
 			*output = claims
 
 			return nil
-		})
+		},
+	)
 	return u
 }
 
 func router() http.Handler {
 	s := web.NewService(openapi31.NewReflector())
 
-	s.Route("/admin", func(r chi.Router) {
-		r.Group(func(r chi.Router) {
-			r.Use(
-				jwtauth.Verifier(tokenAuth),
-				jwtauth.Authenticator(tokenAuth),
-			)
+	s.Route(
+		"/admin", func(r chi.Router) {
+			r.Group(
+				func(r chi.Router) {
+					r.Use(
+						jwtauth.Verifier(tokenAuth),
+						jwtauth.Authenticator(tokenAuth),
+					)
 
-			r.Method(http.MethodGet, "/", nethttp.NewHandler(Get()))
-		})
-	})
+					r.Method(http.MethodGet, "/", nethttp.NewHandler(Get()))
+				},
+			)
+		},
+	)
 
 	// Public routes
-	s.Group(func(r chi.Router) {
-		r.Get("/", func(w http.ResponseWriter, r *http.Request) {
-			w.Write([]byte("welcome anonymous"))
-		})
-	})
+	s.Group(
+		func(r chi.Router) {
+			r.Get(
+				"/", func(w http.ResponseWriter, r *http.Request) {
+					w.Write([]byte("welcome anonymous"))
+				},
+			)
+		},
+	)
 
 	return s
 }

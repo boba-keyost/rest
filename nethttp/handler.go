@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"reflect"
 
-	"github.com/swaggest/rest"
+	"github.com/boba-keyost/rest"
 	"github.com/swaggest/usecase"
 	"github.com/swaggest/usecase/status"
 )

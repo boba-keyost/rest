@@ -7,9 +7,9 @@ import (
 	"net/http/httptest"
 
 	"github.com/go-chi/chi/v5"
-	"github.com/swaggest/rest"
-	"github.com/swaggest/rest/chirouter"
-	"github.com/swaggest/rest/request"
+	"github.com/boba-keyost/rest"
+	"github.com/boba-keyost/rest/chirouter"
+	"github.com/boba-keyost/rest/request"
 )
 
 func ExamplePathToURLValues() {
@@ -35,19 +35,25 @@ func ExamplePathToURLValues() {
 	router := chi.NewRouter()
 
 	// Now in router handler you can decode *http.Request into a Go structure.
-	router.Handle("/foo/{path1}/bar/{path2}", http.HandlerFunc(func(_ http.ResponseWriter, r *http.Request) {
-		var in myRequest
+	router.Handle(
+		"/foo/{path1}/bar/{path2}", http.HandlerFunc(
+			func(_ http.ResponseWriter, r *http.Request) {
+				var in myRequest
 
-		_ = dec.Decode(r, &in, nil)
+				_ = dec.Decode(r, &in, nil)
 
-		fmt.Printf("%+v\n", in)
-	}))
+				fmt.Printf("%+v\n", in)
+			},
+		),
+	)
 
 	// Serving example URL.
 	w := httptest.NewRecorder()
 
-	req, _ := http.NewRequest(http.MethodPost, `/foo/a%2Fbc/bar/123?query1=321`,
-		bytes.NewBufferString("formData1=true&formData2=def"))
+	req, _ := http.NewRequest(
+		http.MethodPost, `/foo/a%2Fbc/bar/123?query1=321`,
+		bytes.NewBufferString("formData1=true&formData2=def"),
+	)
 
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 	req.Header.Set("X-Header-1", "1.23")

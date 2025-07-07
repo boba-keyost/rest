@@ -5,8 +5,8 @@ import (
 
 	oapi "github.com/swaggest/openapi-go"
 	"github.com/swaggest/openapi-go/openapi3"
-	"github.com/swaggest/rest"
-	"github.com/swaggest/rest/openapi"
+	"github.com/boba-keyost/rest"
+	"github.com/boba-keyost/rest/openapi"
 )
 
 // OpenAPIMiddleware reads info and adds validation to handler.
@@ -195,21 +195,25 @@ func OpenAPIAnnotationsMiddleware(
 }
 
 func securityMiddleware(s *openapi.Collector, name string, cfg MiddlewareConfig) func(http.Handler) http.Handler {
-	return OpenAPIAnnotationsMiddleware(s, func(oc oapi.OperationContext) error {
-		oc.AddSecurity(name)
+	return OpenAPIAnnotationsMiddleware(
+		s, func(oc oapi.OperationContext) error {
+			oc.AddSecurity(name)
 
-		if cfg.ResponseStatus == 0 {
-			cfg.ResponseStatus = http.StatusUnauthorized
-		}
+			if cfg.ResponseStatus == 0 {
+				cfg.ResponseStatus = http.StatusUnauthorized
+			}
 
-		if cfg.ResponseStructure == nil {
-			cfg.ResponseStructure = rest.ErrResponse{}
-		}
+			if cfg.ResponseStructure == nil {
+				cfg.ResponseStructure = rest.ErrResponse{}
+			}
 
-		oc.AddRespStructure(cfg.ResponseStructure, func(cu *oapi.ContentUnit) {
-			cu.HTTPStatus = cfg.ResponseStatus
-		})
+			oc.AddRespStructure(
+				cfg.ResponseStructure, func(cu *oapi.ContentUnit) {
+					cu.HTTPStatus = cfg.ResponseStatus
+				},
+			)
 
-		return nil
-	})
+			return nil
+		},
+	)
 }

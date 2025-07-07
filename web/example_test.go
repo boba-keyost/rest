@@ -7,8 +7,8 @@ import (
 
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/swaggest/openapi-go/openapi3"
-	"github.com/swaggest/rest/nethttp"
-	"github.com/swaggest/rest/web"
+	"github.com/boba-keyost/rest/nethttp"
+	"github.com/boba-keyost/rest/web"
 	"github.com/swaggest/usecase"
 )
 
@@ -22,11 +22,13 @@ type album struct {
 }
 
 func postAlbums() usecase.Interactor {
-	u := usecase.NewIOI(new(album), new(album), func(ctx context.Context, input, output interface{}) error {
-		log.Println("Creating album")
+	u := usecase.NewIOI(
+		new(album), new(album), func(ctx context.Context, input, output interface{}) error {
+			log.Println("Creating album")
 
-		return nil
-	})
+			return nil
+		},
+	)
 	u.SetTags("Album")
 
 	return u

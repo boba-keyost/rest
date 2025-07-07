@@ -9,13 +9,13 @@ import (
 	"github.com/go-chi/chi/v5/middleware"
 	oapi "github.com/swaggest/openapi-go"
 	"github.com/swaggest/openapi-go/openapi3"
-	"github.com/swaggest/rest"
-	"github.com/swaggest/rest/chirouter"
-	"github.com/swaggest/rest/jsonschema"
-	"github.com/swaggest/rest/nethttp"
-	"github.com/swaggest/rest/openapi"
-	"github.com/swaggest/rest/request"
-	"github.com/swaggest/rest/response"
+	"github.com/boba-keyost/rest"
+	"github.com/boba-keyost/rest/chirouter"
+	"github.com/boba-keyost/rest/jsonschema"
+	"github.com/boba-keyost/rest/nethttp"
+	"github.com/boba-keyost/rest/openapi"
+	"github.com/boba-keyost/rest/request"
+	"github.com/boba-keyost/rest/response"
 	"github.com/swaggest/usecase"
 )
 
@@ -75,11 +75,13 @@ func NewService(refl oapi.Reflector, options ...func(s *Service)) *Service {
 //
 // Deprecated: use NewService.
 func DefaultService(options ...func(s *Service, initialized bool)) *Service {
-	s := NewService(openapi3.NewReflector(), func(s *Service) {
-		for _, o := range options {
-			o(s, false)
-		}
-	})
+	s := NewService(
+		openapi3.NewReflector(), func(s *Service) {
+			for _, o := range options {
+				o(s, false)
+			}
+		},
+	)
 
 	if r3, ok := s.OpenAPIReflector().(*openapi3.Reflector); ok && s.OpenAPI == nil {
 		s.OpenAPI = r3.Spec

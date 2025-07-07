@@ -8,18 +8,22 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/assert"
-	"github.com/swaggest/rest"
-	"github.com/swaggest/rest/jsonschema"
-	"github.com/swaggest/rest/openapi"
-	"github.com/swaggest/rest/request"
+	"github.com/boba-keyost/rest"
+	"github.com/boba-keyost/rest/jsonschema"
+	"github.com/boba-keyost/rest/openapi"
+	"github.com/boba-keyost/rest/request"
 )
 
 // BenchmarkRequestValidator_ValidateRequestData-4   	  634356	      1761 ns/op	    2496 B/op	       8 allocs/op.
 func BenchmarkRequestValidator_ValidateRequestData(b *testing.B) {
 	validator := jsonschema.NewFactory(&openapi.Collector{}, &openapi.Collector{}).
-		MakeRequestValidator(http.MethodPost, new(struct {
-			Cookie string `cookie:"in_cookie" minLength:"3" required:"true"`
-		}), nil)
+		MakeRequestValidator(
+			http.MethodPost, new(
+				struct {
+					Cookie string `cookie:"in_cookie" minLength:"3" required:"true"`
+				},
+		), nil,
+	)
 
 	b.ResetTimer()
 	b.ReportAllocs()
@@ -38,14 +42,18 @@ func BenchmarkRequestValidator_ValidateRequestData(b *testing.B) {
 
 func TestRequestValidator_ValidateData(t *testing.T) {
 	validator := jsonschema.NewFactory(&openapi.Collector{}, &openapi.Collector{}).
-		MakeRequestValidator(http.MethodPost, new(struct {
-			Cookie   string `cookie:"in_cookie" minimum:"100" required:"true"`
-			Query    string `query:"in_query_ignored" minLength:"3"`
-			FormData string `formData:"inFormDataIgnored" minLength:"3"`
-		}), rest.RequestMapping{
-			rest.ParamInQuery:    map[string]string{"Query": "in_query"},
-			rest.ParamInFormData: map[string]string{"FormData": "inFormData"},
-		})
+		MakeRequestValidator(
+			http.MethodPost, new(
+				struct {
+					Cookie   string `cookie:"in_cookie" minimum:"100" required:"true"`
+					Query    string `query:"in_query_ignored" minLength:"3"`
+					FormData string `formData:"inFormDataIgnored" minLength:"3"`
+				},
+		), rest.RequestMapping{
+				rest.ParamInQuery:    map[string]string{"Query": "in_query"},
+				rest.ParamInFormData: map[string]string{"FormData": "inFormData"},
+			},
+	)
 
 	err := validator.ValidateData(rest.ParamInCookie, map[string]interface{}{"in_cookie": 123})
 	assert.Equal(t, err, rest.ValidationErrors{"cookie:in_cookie": []string{"#: expected string, but got number"}})
@@ -73,21 +81,33 @@ func TestRequestValidator_ValidateData(t *testing.T) {
 
 func TestFactory_MakeResponseValidator(t *testing.T) {
 	validator := jsonschema.NewFactory(&openapi.Collector{}, &openapi.Collector{}).
-		MakeResponseValidator(http.StatusOK, "application/json", new(struct {
-			Name  string `json:"name" minLength:"1"`
-			Trace string `maxLength:"3"`
-		}), map[string]string{
-			"Trace": "x-TrAcE",
-		})
+		MakeResponseValidator(
+			http.StatusOK, "application/json", new(
+				struct {
+					Name  string `json:"name" minLength:"1"`
+					Trace string `maxLength:"3"`
+				},
+		), map[string]string{
+				"Trace": "x-TrAcE",
+			},
+	)
 
 	assert.NoError(t, validator.ValidateJSONBody([]byte(`{"name":"John"}`)))
 	assert.Error(t, validator.ValidateJSONBody([]byte(`{"name":""}`))) // minLength:"1" violated.
-	assert.NoError(t, validator.ValidateData(rest.ParamInHeader, map[string]interface{}{
-		"X-Trace": "abc",
-	}))
-	assert.Error(t, validator.ValidateData(rest.ParamInHeader, map[string]interface{}{
-		"X-Trace": "abcd", // maxLength:"3" violated.
-	}))
+	assert.NoError(
+		t, validator.ValidateData(
+			rest.ParamInHeader, map[string]interface{}{
+				"X-Trace": "abc",
+			},
+		),
+	)
+	assert.Error(
+		t, validator.ValidateData(
+			rest.ParamInHeader, map[string]interface{}{
+				"X-Trace": "abcd", // maxLength:"3" violated.
+			},
+		),
+	)
 }
 
 func TestNullableTime(t *testing.T) {
@@ -103,8 +123,10 @@ func TestNullableTime(t *testing.T) {
 }
 
 func TestValidator_ForbidUnknownParams(t *testing.T) {
-	req, err := http.NewRequestWithContext(context.Background(), http.MethodGet,
-		"/?foo=bar&baz=1", nil)
+	req, err := http.NewRequestWithContext(
+		context.Background(), http.MethodGet,
+		"/?foo=bar&baz=1", nil,
+	)
 	assert.NoError(t, err)
 
 	type input struct {
@@ -120,6 +142,8 @@ func TestValidator_ForbidUnknownParams(t *testing.T) {
 		MakeRequestValidator(http.MethodGet, in, nil)
 
 	err = dec.Decode(req, in, validator)
-	assert.Equal(t, rest.ValidationErrors{"query:baz": []string{"unknown parameter with value 1"}}, err,
-		fmt.Sprintf("%#v", err))
+	assert.Equal(
+		t, rest.ValidationErrors{"query:baz": []string{"unknown parameter with value 1"}}, err,
+		fmt.Sprintf("%#v", err),
+	)
 }

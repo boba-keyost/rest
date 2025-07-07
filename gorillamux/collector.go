@@ -7,8 +7,8 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/swaggest/jsonschema-go"
 	oapi "github.com/swaggest/openapi-go"
-	"github.com/swaggest/rest/nethttp"
-	"github.com/swaggest/rest/openapi"
+	"github.com/boba-keyost/rest/nethttp"
+	"github.com/boba-keyost/rest/openapi"
 )
 
 // OpenAPICollector is a wrapper for openapi.Collector tailored to walk gorilla/mux router.
@@ -113,22 +113,28 @@ func (dc *OpenAPICollector) collect(method, path string, preparer preparerFunc) 
 		if len(pathItems) > 0 {
 			req := jsonschema.Struct{}
 			for _, p := range pathItems {
-				req.Fields = append(req.Fields, jsonschema.Field{
-					Name:  "F" + p,
-					Tag:   reflect.StructTag(`path:"` + p + `"`),
-					Value: "",
-				})
+				req.Fields = append(
+					req.Fields, jsonschema.Field{
+						Name:  "F" + p,
+						Tag:   reflect.StructTag(`path:"` + p + `"`),
+						Value: "",
+					},
+				)
 			}
 
 			oc.AddReqStructure(req)
 		}
 
-		oc.SetDescription("Information about this operation was obtained using only HTTP method and path pattern. " +
-			"It may be incomplete and/or inaccurate.")
+		oc.SetDescription(
+			"Information about this operation was obtained using only HTTP method and path pattern. " +
+				"It may be incomplete and/or inaccurate.",
+		)
 		oc.SetTags("Incomplete")
-		oc.AddRespStructure(nil, func(cu *oapi.ContentUnit) {
-			cu.ContentType = "text/html"
-		})
+		oc.AddRespStructure(
+			nil, func(cu *oapi.ContentUnit) {
+				cu.ContentType = "text/html"
+			},
+		)
 
 		return nil
 	}

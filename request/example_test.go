@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/swaggest/rest/request"
+	"github.com/boba-keyost/rest/request"
 )
 
 func ExampleDecoder_Decode() {

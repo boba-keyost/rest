@@ -12,8 +12,8 @@ import (
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/swaggest/openapi-go"
 	"github.com/swaggest/openapi-go/openapi3"
-	"github.com/swaggest/rest/nethttp"
-	"github.com/swaggest/rest/web"
+	"github.com/boba-keyost/rest/nethttp"
+	"github.com/boba-keyost/rest/web"
 	swg "github.com/swaggest/swgui"
 	swgui "github.com/swaggest/swgui/v5emb"
 	"github.com/swaggest/usecase"
@@ -44,10 +44,12 @@ func service() *web.Service {
 	apiV1.Wrap(
 		middleware.BasicAuth("Admin Access", map[string]string{"admin": "admin"}),
 		nethttp.HTTPBasicSecurityMiddleware(s.OpenAPICollector, "Admin", "Admin access"),
-		nethttp.OpenAPIAnnotationsMiddleware(s.OpenAPICollector, func(oc openapi.OperationContext) error {
-			oc.SetTags(append(oc.Tags(), "V1")...)
-			return nil
-		}),
+		nethttp.OpenAPIAnnotationsMiddleware(
+			s.OpenAPICollector, func(oc openapi.OperationContext) error {
+				oc.SetTags(append(oc.Tags(), "V1")...)
+				return nil
+			},
+		),
 	)
 	apiV1.Post("/sum", sum())
 	apiV1.Post("/mul", mul())
@@ -63,22 +65,30 @@ func service() *web.Service {
 	s.Mount("/api/v2", apiV2)
 
 	// Root docs needs a bit of hackery to expose versioned APIs as separate services.
-	s.Docs("/api/docs", swgui.NewWithConfig(swg.Config{
-		ShowTopBar: true,
-		SettingsUI: map[string]string{
-			// When "urls" are configured, Swagger UI ignores "url" and switches to multi API mode.
-			"urls": `[
+	s.Docs(
+		"/api/docs", swgui.NewWithConfig(
+			swg.Config{
+				ShowTopBar: true,
+				SettingsUI: map[string]string{
+					// When "urls" are configured, Swagger UI ignores "url" and switches to multi API mode.
+					"urls": `[
 	{"url": "/api/v1/openapi.json", "name": "APIv1"}, 
 	{"url": "/api/v2/openapi.json", "name": "APIv2"}
 ]`,
-			`"urls.primaryName"`: `"APIv2"`, // Using APIv2 as default.
-		},
-	}))
+					`"urls.primaryName"`: `"APIv2"`, // Using APIv2 as default.
+				},
+			},
+		),
+	)
 
 	// Blanket handler, for example to serve static content.
-	s.Mount("/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		_, _ = w.Write([]byte("blanket handler got a request: " + r.URL.String()))
-	}))
+	s.Mount(
+		"/", http.HandlerFunc(
+			func(w http.ResponseWriter, r *http.Request) {
+				_, _ = w.Write([]byte("blanket handler got a request: " + r.URL.String()))
+			},
+		),
+	)
 
 	return s
 }
@@ -89,30 +99,36 @@ func specHandler(s openapi.SpecSchema) http.Handler {
 		panic(err)
 	}
 
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-Type", "application/json")
-		_, _ = w.Write(j)
-	})
+	return http.HandlerFunc(
+		func(w http.ResponseWriter, r *http.Request) {
+			w.Header().Set("Content-Type", "application/json")
+			_, _ = w.Write(j)
+		},
+	)
 }
 
 func mul() usecase.Interactor {
-	return usecase.NewInteractor(func(ctx context.Context, input []int, output *int) error {
-		*output = 1
+	return usecase.NewInteractor(
+		func(ctx context.Context, input []int, output *int) error {
+			*output = 1
 
-		for _, v := range input {
-			*output *= v
-		}
+			for _, v := range input {
+				*output *= v
+			}
 
-		return nil
-	})
+			return nil
+		},
+	)
 }
 
 func sum() usecase.Interactor {
-	return usecase.NewInteractor(func(ctx context.Context, input []int, output *int) error {
-		for _, v := range input {
-			*output += v
-		}
+	return usecase.NewInteractor(
+		func(ctx context.Context, input []int, output *int) error {
+			for _, v := range input {
+				*output += v
+			}
 
-		return nil
-	})
+			return nil
+		},
+	)
 }

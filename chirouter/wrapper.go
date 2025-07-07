@@ -5,8 +5,8 @@ import (
 	"strings"
 
 	"github.com/go-chi/chi/v5"
-	"github.com/swaggest/rest"
-	"github.com/swaggest/rest/nethttp"
+	"github.com/boba-keyost/rest"
+	"github.com/boba-keyost/rest/nethttp"
 )
 
 // NewWrapper creates router wrapper to upgrade middlewares processing.

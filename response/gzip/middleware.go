@@ -13,7 +13,7 @@ import (
 	"sync"
 	"syscall"
 
-	gz "github.com/swaggest/rest/gzip"
+	gz "github.com/boba-keyost/rest/gzip"
 )
 
 const (
@@ -27,19 +27,21 @@ const (
 
 // Middleware enables gzip compression of handler response for requests that accept gzip encoding.
 func Middleware(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w = maybeGzipResponseWriter(w, r)
-		if closer, ok := w.(io.Closer); ok {
-			defer func() {
-				err := closer.Close()
-				if err != nil && !errors.Is(err, syscall.EPIPE) {
-					panic(fmt.Sprintf("BUG: cannot close gzip writer: %s", err))
-				}
-			}()
-		}
+	return http.HandlerFunc(
+		func(w http.ResponseWriter, r *http.Request) {
+			w = maybeGzipResponseWriter(w, r)
+			if closer, ok := w.(io.Closer); ok {
+				defer func() {
+					err := closer.Close()
+					if err != nil && !errors.Is(err, syscall.EPIPE) {
+						panic(fmt.Sprintf("BUG: cannot close gzip writer: %s", err))
+					}
+				}()
+			}
 
-		next.ServeHTTP(w, r)
-	})
+			next.ServeHTTP(w, r)
+		},
+	)
 }
 
 var (

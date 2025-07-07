@@ -7,8 +7,8 @@ import (
 	"strings"
 
 	"github.com/swaggest/form/v5"
-	"github.com/swaggest/rest"
-	"github.com/swaggest/rest/nethttp"
+	"github.com/boba-keyost/rest"
+	"github.com/boba-keyost/rest/nethttp"
 )
 
 type (

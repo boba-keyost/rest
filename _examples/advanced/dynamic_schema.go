@@ -8,7 +8,7 @@ import (
 
 	"github.com/bool64/ctxd"
 	"github.com/swaggest/jsonschema-go"
-	"github.com/swaggest/rest/request"
+	"github.com/boba-keyost/rest/request"
 	"github.com/swaggest/usecase"
 	"github.com/swaggest/usecase/status"
 )
@@ -63,30 +63,34 @@ func dynamicSchema() usecase.Interactor {
 		{Name: "Bar", Value: "abc", Tag: `json:"bar"`},
 	}
 
-	u := usecase.NewIOI(dynIn, dynOut, func(ctx context.Context, input, output interface{}) (err error) {
-		var (
-			in  = input.(dynamicInput)
-			out = output.(*dynamicOutput)
-		)
+	u := usecase.NewIOI(
+		dynIn, dynOut, func(ctx context.Context, input, output interface{}) (err error) {
+			var (
+				in  = input.(dynamicInput)
+				out = output.(*dynamicOutput)
+			)
 
-		switch in.Type {
-		case "ok":
-			out.Status = "ok"
-			out.jsonFields = map[string]interface{}{
-				"bar": in.Request().URL.Query().Get("bar"),
+			switch in.Type {
+			case "ok":
+				out.Status = "ok"
+				out.jsonFields = map[string]interface{}{
+					"bar": in.Request().URL.Query().Get("bar"),
+				}
+				out.headerFields = map[string]string{
+					"foo": in.Request().Header.Get("foo"),
+				}
+			case "invalid_argument":
+				return status.Wrap(errors.New("bad value for foo"), status.InvalidArgument)
+			case "conflict":
+				return status.Wrap(
+					ctxd.NewError(ctx, "conflict", "foo", "bar"),
+					status.AlreadyExists,
+				)
 			}
-			out.headerFields = map[string]string{
-				"foo": in.Request().Header.Get("foo"),
-			}
-		case "invalid_argument":
-			return status.Wrap(errors.New("bad value for foo"), status.InvalidArgument)
-		case "conflict":
-			return status.Wrap(ctxd.NewError(ctx, "conflict", "foo", "bar"),
-				status.AlreadyExists)
-		}
 
-		return nil
-	})
+			return nil
+		},
+	)
 
 	u.SetTitle("Dynamic Request Schema")
 	u.SetDescription("This use case demonstrates documentation of types that are only known at runtime.")

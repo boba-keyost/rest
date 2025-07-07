@@ -9,8 +9,8 @@ import (
 	"github.com/stretchr/testify/require"
 	"github.com/swaggest/assertjson"
 	oapi "github.com/swaggest/openapi-go"
-	"github.com/swaggest/rest/nethttp"
-	"github.com/swaggest/rest/openapi"
+	"github.com/boba-keyost/rest/nethttp"
+	"github.com/boba-keyost/rest/openapi"
 	"github.com/swaggest/usecase"
 )
 
@@ -22,31 +22,46 @@ func TestOpenAPIMiddleware(t *testing.T) {
 	}{}
 
 	u.Input = new(Input)
-	u.Output = new(struct {
-		Value  string `json:"val"`
-		Header int
-	})
-	u.Interactor = usecase.Interact(func(_ context.Context, input, _ interface{}) error {
-		in, ok := input.(*Input)
-		assert.True(t, ok)
-		assert.Equal(t, 123, in.ID)
-
-		return nil
-	})
-
-	uh := nethttp.NewHandler(u,
-		nethttp.SuccessfulResponseContentType("application/vnd.ms-excel"),
-		nethttp.RequestMapping(new(struct {
-			ID int `query:"ident"`
-		})),
-		nethttp.ResponseHeaderMapping(new(struct {
-			Header int `header:"X-Hd"`
-		})),
-		nethttp.AnnotateOpenAPIOperation(func(oc oapi.OperationContext) error {
-			oc.SetDescription("Hello!")
+	u.Output = new(
+		struct {
+			Value  string `json:"val"`
+			Header int
+		},
+	)
+	u.Interactor = usecase.Interact(
+		func(_ context.Context, input, _ interface{}) error {
+			in, ok := input.(*Input)
+			assert.True(t, ok)
+			assert.Equal(t, 123, in.ID)
 
 			return nil
-		}),
+		},
+	)
+
+	uh := nethttp.NewHandler(
+		u,
+		nethttp.SuccessfulResponseContentType("application/vnd.ms-excel"),
+		nethttp.RequestMapping(
+			new(
+				struct {
+					ID int `query:"ident"`
+				},
+			),
+		),
+		nethttp.ResponseHeaderMapping(
+			new(
+				struct {
+					Header int `header:"X-Hd"`
+				},
+			),
+		),
+		nethttp.AnnotateOpenAPIOperation(
+			func(oc oapi.OperationContext) error {
+				oc.SetDescription("Hello!")
+
+				return nil
+			},
+		),
 	)
 
 	c := openapi.Collector{}
@@ -54,10 +69,16 @@ func TestOpenAPIMiddleware(t *testing.T) {
 	ws := []func(handler http.Handler) http.Handler{
 		nethttp.OpenAPIMiddleware(&c),
 		nethttp.HTTPBasicSecurityMiddleware(&c, "admin", "Admin Area."),
-		nethttp.HTTPBearerSecurityMiddleware(&c, "api", "API Security.", "JWT",
-			nethttp.SecurityResponse(new(struct {
-				Error string `json:"error"`
-			}), http.StatusForbidden)),
+		nethttp.HTTPBearerSecurityMiddleware(
+			&c, "api", "API Security.", "JWT",
+			nethttp.SecurityResponse(
+				new(
+					struct {
+						Error string `json:"error"`
+					},
+				), http.StatusForbidden,
+			),
+		),
 		nethttp.HandlerWithRouteMiddleware(http.MethodGet, "/test"),
 	}
 
@@ -70,7 +91,8 @@ func TestOpenAPIMiddleware(t *testing.T) {
 	sp, err := assertjson.MarshalIndentCompact(c.SpecSchema(), "", " ", 100)
 	require.NoError(t, err)
 
-	assertjson.Equal(t, []byte(`{
+	assertjson.Equal(
+		t, []byte(`{
 	 "openapi":"3.0.3","info":{"title":"","version":""},
 	 "paths":{
 	  "/test":{
@@ -113,5 +135,6 @@ func TestOpenAPIMiddleware(t *testing.T) {
 	   "api":{"type":"http","scheme":"bearer","bearerFormat":"JWT","description":"API Security."}
 	  }
 	 }
-	}`), sp, string(sp))
+	}`), sp, string(sp),
+	)
 }

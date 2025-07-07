@@ -12,16 +12,20 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	gzip2 "github.com/swaggest/rest/gzip"
-	"github.com/swaggest/rest/response/gzip"
+	gzip2 "github.com/boba-keyost/rest/gzip"
+	"github.com/boba-keyost/rest/response/gzip"
 )
 
 func TestMiddleware(t *testing.T) {
 	resp := []byte(strings.Repeat("A", 10000) + "!!!")
-	h := gzip.Middleware(http.HandlerFunc(func(rw http.ResponseWriter, _ *http.Request) {
-		_, err := rw.Write(resp)
-		assert.NoError(t, err)
-	}))
+	h := gzip.Middleware(
+		http.HandlerFunc(
+			func(rw http.ResponseWriter, _ *http.Request) {
+				_, err := rw.Write(resp)
+				assert.NoError(t, err)
+			},
+		),
+	)
 
 	rw := httptest.NewRecorder()
 	r, err := http.NewRequest(http.MethodGet, "/", nil)
@@ -67,10 +71,14 @@ func TestMiddleware(t *testing.T) {
 // BenchmarkMiddleware-12    	  108810	      9619 ns/op	    1223 B/op	      11 allocs/op.
 func BenchmarkMiddleware(b *testing.B) {
 	resp := []byte(strings.Repeat("A", 10000) + "!!!")
-	h := gzip.Middleware(http.HandlerFunc(func(rw http.ResponseWriter, _ *http.Request) {
-		_, err := rw.Write(resp)
-		assert.NoError(b, err)
-	}))
+	h := gzip.Middleware(
+		http.HandlerFunc(
+			func(rw http.ResponseWriter, _ *http.Request) {
+				_, err := rw.Write(resp)
+				assert.NoError(b, err)
+			},
+		),
+	)
 
 	r, err := http.NewRequest(http.MethodGet, "/", nil)
 
@@ -92,10 +100,12 @@ func BenchmarkMiddleware(b *testing.B) {
 // BenchmarkMiddleware_control-4   	  214824	      5945 ns/op	   11184 B/op	       9 allocs/op.
 func BenchmarkMiddleware_control(b *testing.B) {
 	resp := []byte(strings.Repeat("A", 10000) + "!!!")
-	h := http.HandlerFunc(func(rw http.ResponseWriter, _ *http.Request) {
-		_, err := rw.Write(resp)
-		assert.NoError(b, err)
-	})
+	h := http.HandlerFunc(
+		func(rw http.ResponseWriter, _ *http.Request) {
+			_, err := rw.Write(resp)
+			assert.NoError(b, err)
+		},
+	)
 
 	r, err := http.NewRequest(http.MethodGet, "/", nil)
 
@@ -114,15 +124,23 @@ func BenchmarkMiddleware_control(b *testing.B) {
 func TestMiddleware_concurrency(t *testing.T) {
 	resp := []byte(strings.Repeat("A", 10000) + "!!!")
 	respGz := gzipEncode(t, resp)
-	h := gzip.Middleware(http.HandlerFunc(func(rw http.ResponseWriter, _ *http.Request) {
-		_, err := rw.Write(resp)
-		assert.NoError(t, err)
-	}))
+	h := gzip.Middleware(
+		http.HandlerFunc(
+			func(rw http.ResponseWriter, _ *http.Request) {
+				_, err := rw.Write(resp)
+				assert.NoError(t, err)
+			},
+		),
+	)
 
-	hg := gzip.Middleware(http.HandlerFunc(func(rw http.ResponseWriter, _ *http.Request) {
-		_, err := gzip2.WriteCompressedBytes(respGz, rw)
-		assert.NoError(t, err)
-	}))
+	hg := gzip.Middleware(
+		http.HandlerFunc(
+			func(rw http.ResponseWriter, _ *http.Request) {
+				_, err := gzip2.WriteCompressedBytes(respGz, rw)
+				assert.NoError(t, err)
+			},
+		),
+	)
 
 	n := 100
 	wg := sync.WaitGroup{}
@@ -161,10 +179,14 @@ func TestGzipResponseWriter_ExpectCompressedBytes(t *testing.T) {
 	resp := []byte(strings.Repeat("A", 10000) + "!!!")
 	respGz := gzipEncode(t, resp)
 
-	h := gzip.Middleware(http.HandlerFunc(func(rw http.ResponseWriter, _ *http.Request) {
-		_, err := gzip2.WriteCompressedBytes(respGz, rw)
-		assert.NoError(t, err)
-	}))
+	h := gzip.Middleware(
+		http.HandlerFunc(
+			func(rw http.ResponseWriter, _ *http.Request) {
+				_, err := gzip2.WriteCompressedBytes(respGz, rw)
+				assert.NoError(t, err)
+			},
+		),
+	)
 
 	rw := httptest.NewRecorder()
 	r, err := http.NewRequest(http.MethodGet, "/", nil)
@@ -181,11 +203,15 @@ func TestGzipResponseWriter_ExpectCompressedBytes(t *testing.T) {
 
 func TestMiddleware_skipContentEncoding(t *testing.T) {
 	resp := []byte(strings.Repeat("A", 10000) + "!!!")
-	h := gzip.Middleware(http.HandlerFunc(func(rw http.ResponseWriter, _ *http.Request) {
-		rw.Header().Set("Content-Encoding", "br")
-		_, err := rw.Write(resp)
-		assert.NoError(t, err)
-	}))
+	h := gzip.Middleware(
+		http.HandlerFunc(
+			func(rw http.ResponseWriter, _ *http.Request) {
+				rw.Header().Set("Content-Encoding", "br")
+				_, err := rw.Write(resp)
+				assert.NoError(t, err)
+			},
+		),
+	)
 
 	rw := httptest.NewRecorder()
 	r, err := http.NewRequest(http.MethodGet, "/", nil)
@@ -201,12 +227,16 @@ func TestMiddleware_skipContentEncoding(t *testing.T) {
 }
 
 func TestMiddleware_noContent(t *testing.T) {
-	h := gzip.Middleware(http.HandlerFunc(func(rw http.ResponseWriter, _ *http.Request) {
-		rw.WriteHeader(http.StatusNoContent)
+	h := gzip.Middleware(
+		http.HandlerFunc(
+			func(rw http.ResponseWriter, _ *http.Request) {
+				rw.WriteHeader(http.StatusNoContent)
 
-		// Second call does not hurt.
-		rw.WriteHeader(http.StatusNoContent)
-	}))
+				// Second call does not hurt.
+				rw.WriteHeader(http.StatusNoContent)
+			},
+		),
+	)
 
 	rw := httptest.NewRecorder()
 	r, err := http.NewRequest(http.MethodGet, "/", nil)
@@ -252,13 +282,17 @@ func gzipDecode(t *testing.T, data []byte) []byte {
 
 func TestMiddleware_hijacker(t *testing.T) {
 	rb := []byte(strings.Repeat("A", 10000) + "!!!")
-	h := gzip.Middleware(http.HandlerFunc(func(rw http.ResponseWriter, _ *http.Request) {
-		_, ok := rw.(http.Hijacker)
-		require.True(t, ok)
+	h := gzip.Middleware(
+		http.HandlerFunc(
+			func(rw http.ResponseWriter, _ *http.Request) {
+				_, ok := rw.(http.Hijacker)
+				require.True(t, ok)
 
-		_, err := rw.Write(rb)
-		assert.NoError(t, err)
-	}))
+				_, err := rw.Write(rb)
+				assert.NoError(t, err)
+			},
+		),
+	)
 
 	srv := httptest.NewServer(h)
 	defer srv.Close()

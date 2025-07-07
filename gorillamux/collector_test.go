@@ -9,7 +9,7 @@ import (
 	"github.com/swaggest/assertjson"
 	"github.com/swaggest/openapi-go"
 	"github.com/swaggest/openapi-go/openapi3"
-	"github.com/swaggest/rest/gorillamux"
+	"github.com/boba-keyost/rest/gorillamux"
 	"github.com/swaggest/usecase"
 )
 
@@ -38,42 +38,58 @@ func (s structuredHandler) ServeHTTP(_ http.ResponseWriter, _ *http.Request) {}
 func TestOpenAPICollector_Walker(t *testing.T) {
 	r := mux.NewRouter()
 
-	r.Use(func(handler http.Handler) http.Handler {
-		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			handler.ServeHTTP(w, r)
-		})
-	})
+	r.Use(
+		func(handler http.Handler) http.Handler {
+			return http.HandlerFunc(
+				func(w http.ResponseWriter, r *http.Request) {
+					handler.ServeHTTP(w, r)
+				},
+			)
+		},
+	)
 
 	r.HandleFunc("/products", nil).Methods(http.MethodGet)
 	r.HandleFunc("/articles", nil).Methods(http.MethodGet)
-	r.Handle("/products/{key}",
-		newStructuredHandler(func(h *structuredHandler) {
-			h.Input = struct {
-				Key string `path:"key"`
-			}{}
-			h.Output = struct{}{}
-		})).
+	r.Handle(
+		"/products/{key}",
+		newStructuredHandler(
+			func(h *structuredHandler) {
+				h.Input = struct {
+					Key string `path:"key"`
+				}{}
+				h.Output = struct{}{}
+			},
+		),
+	).
 		Methods(http.MethodGet).
 		Queries("key", "value")
-	r.Handle("/articles/{category}/",
-		newStructuredHandler(func(h *structuredHandler) {
-			h.Input = struct {
-				Filter   string `query:"filter"`
-				Category string `path:"category"`
-			}{}
-		})).
+	r.Handle(
+		"/articles/{category}/",
+		newStructuredHandler(
+			func(h *structuredHandler) {
+				h.Input = struct {
+					Filter   string `query:"filter"`
+					Category string `path:"category"`
+				}{}
+			},
+		),
+	).
 		Methods(http.MethodGet).
 		Host("{subdomain:[a-z]+}.example.com")
 
 	s := r.Host("www.example.com").Subrouter()
 
-	s.Handle("/articles/{category}/{id:[0-9]+}", newStructuredHandler(func(h *structuredHandler) {
-		h.Input = struct {
-			Filter   string `query:"filter"`
-			Category string `path:"category"`
-			ID       string `path:"id"`
-		}{}
-	})).
+	s.Handle(
+		"/articles/{category}/{id:[0-9]+}", newStructuredHandler(
+			func(h *structuredHandler) {
+				h.Input = struct {
+					Filter   string `query:"filter"`
+					Category string `path:"category"`
+					ID       string `path:"id"`
+				}{}
+			},
+		),
+	).
 		Methods(http.MethodGet).
 		Headers("X-Requested-With", "XMLHttpRequest")
 
@@ -92,7 +108,8 @@ func TestOpenAPICollector_Walker(t *testing.T) {
 
 	assert.NoError(t, r.Walk(c.Walker))
 
-	assertjson.EqMarshal(t, `{
+	assertjson.EqMarshal(
+		t, `{
 	  "openapi":"3.0.3",
 	  "info":{
 		"title":"Test Server","description":"Provides API over HTTP",
@@ -146,23 +163,27 @@ func TestOpenAPICollector_Walker(t *testing.T) {
 		  }
 		}
 	  }
-	}`, rf.Spec)
+	}`, rf.Spec,
+	)
 
 	rf = openapi3.NewReflector()
 	rf.Spec.Info.
 		WithTitle("Test Server (www.example.com)").
 		WithVersion("v1.2.3").
 		WithDescription("Provides API over HTTP")
-	rf.Spec.WithServers(openapi3.Server{
-		URL: "www.example.com",
-	})
+	rf.Spec.WithServers(
+		openapi3.Server{
+			URL: "www.example.com",
+		},
+	)
 
 	c = gorillamux.NewOpenAPICollector(rf)
 	c.Host = "www.example.com"
 
 	assert.NoError(t, r.Walk(c.Walker))
 
-	assertjson.EqMarshal(t, `{
+	assertjson.EqMarshal(
+		t, `{
 	  "openapi":"3.0.3",
 	  "info":{
 		"title":"Test Server (www.example.com)",
@@ -184,28 +205,32 @@ func TestOpenAPICollector_Walker(t *testing.T) {
 		  }
 		}
 	  }
-	}`, rf.Spec)
+	}`, rf.Spec,
+	)
 
 	rf = openapi3.NewReflector()
 	rf.Spec.Info.
 		WithTitle("Test Server ({subdomain}.example.com)").
 		WithVersion("v1.2.3").
 		WithDescription("Provides API over HTTP")
-	rf.Spec.WithServers(openapi3.Server{
-		URL: "{subdomain}.example.com",
-		Variables: map[string]openapi3.ServerVariable{
-			"subdomain": {
-				Default: "foo",
+	rf.Spec.WithServers(
+		openapi3.Server{
+			URL: "{subdomain}.example.com",
+			Variables: map[string]openapi3.ServerVariable{
+				"subdomain": {
+					Default: "foo",
+				},
 			},
 		},
-	})
+	)
 
 	c = gorillamux.NewOpenAPICollector(rf)
 	c.Host = "{subdomain:[a-z]+}.example.com"
 
 	assert.NoError(t, r.Walk(c.Walker))
 
-	assertjson.EqMarshal(t, `{
+	assertjson.EqMarshal(
+		t, `{
 	  "openapi":"3.0.3",
 	  "info":{
 		"title":"Test Server ({subdomain}.example.com)",
@@ -231,5 +256,6 @@ func TestOpenAPICollector_Walker(t *testing.T) {
 		  }
 		}
 	  }
-	}`, rf.Spec)
+	}`, rf.Spec,
+	)
 }

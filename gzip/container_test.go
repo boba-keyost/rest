@@ -10,10 +10,10 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/swaggest/assertjson"
-	"github.com/swaggest/rest/gzip"
-	"github.com/swaggest/rest/nethttp"
-	"github.com/swaggest/rest/response"
-	gzip2 "github.com/swaggest/rest/response/gzip"
+	"github.com/boba-keyost/rest/gzip"
+	"github.com/boba-keyost/rest/nethttp"
+	"github.com/boba-keyost/rest/response"
+	gzip2 "github.com/boba-keyost/rest/response/gzip"
 	"github.com/swaggest/usecase"
 )
 
@@ -21,8 +21,10 @@ func TestWriteJSON(t *testing.T) {
 	v := make([]string, 0, 100)
 
 	for i := 0; i < 100; i++ {
-		v = append(v, "Quis autem vel eum iure reprehenderit, qui in ea voluptate velit esse, "+
-			"quam nihil molestiae consequatur, vel illum, qui dolorem eum fugiat, quo voluptas nulla pariatur?")
+		v = append(
+			v, "Quis autem vel eum iure reprehenderit, qui in ea voluptate velit esse, "+
+				"quam nihil molestiae consequatur, vel illum, qui dolorem eum fugiat, quo voluptas nulla pariatur?",
+		)
 	}
 
 	cont := gzip.JSONContainer{}
@@ -49,11 +51,13 @@ func TestWriteJSON(t *testing.T) {
 	var ur interface{} = cont
 
 	u.Output = new(interface{})
-	u.Interactor = usecase.Interact(func(_ context.Context, _, output interface{}) error {
-		*output.(*interface{}) = ur
+	u.Interactor = usecase.Interact(
+		func(_ context.Context, _, output interface{}) error {
+			*output.(*interface{}) = ur
 
-		return nil
-	})
+			return nil
+		},
+	)
 
 	h := nethttp.NewHandler(u)
 	h.SetResponseEncoder(&response.Encoder{})

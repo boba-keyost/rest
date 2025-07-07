@@ -3,7 +3,7 @@ package usecase
 import (
 	"context"
 
-	"github.com/swaggest/rest/_examples/task-api/internal/domain/task"
+	"github.com/boba-keyost/rest/_examples/task-api/internal/domain/task"
 	"github.com/swaggest/usecase"
 	"github.com/swaggest/usecase/status"
 )
@@ -14,16 +14,18 @@ type finishTaskDeps interface {
 
 // FinishTask creates usecase interactor.
 func FinishTask(deps finishTaskDeps) usecase.IOInteractor {
-	u := usecase.NewIOI(new(task.Identity), nil, func(ctx context.Context, input, _ interface{}) error {
-		var (
-			in  = input.(*task.Identity)
-			err error
-		)
+	u := usecase.NewIOI(
+		new(task.Identity), nil, func(ctx context.Context, input, _ interface{}) error {
+			var (
+				in  = input.(*task.Identity)
+				err error
+			)
 
-		err = deps.TaskFinisher().Finish(ctx, *in)
+			err = deps.TaskFinisher().Finish(ctx, *in)
 
-		return err
-	})
+			return err
+		},
+	)
 
 	u.SetDescription("Finish task by ID.")
 	u.SetExpectedErrors(

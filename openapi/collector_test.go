@@ -15,9 +15,9 @@ import (
 	"github.com/swaggest/assertjson"
 	jschema "github.com/swaggest/jsonschema-go"
 	"github.com/swaggest/openapi-go/openapi3"
-	"github.com/swaggest/rest"
-	"github.com/swaggest/rest/jsonschema"
-	"github.com/swaggest/rest/openapi"
+	"github.com/boba-keyost/rest"
+	"github.com/boba-keyost/rest/jsonschema"
+	"github.com/boba-keyost/rest/openapi"
 	"github.com/swaggest/usecase"
 	"github.com/swaggest/usecase/status"
 )
@@ -52,11 +52,13 @@ func TestCollector_Collect(t *testing.T) {
 		BasePath: "http://example.com/",
 	}
 
-	c.Annotate(http.MethodPost, "/foo", func(op *openapi3.Operation) error {
-		op.WithDescription("This is Foo.")
+	c.Annotate(
+		http.MethodPost, "/foo", func(op *openapi3.Operation) error {
+			op.WithDescription("This is Foo.")
 
-		return nil
-	})
+			return nil
+		},
+	)
 
 	u := struct {
 		usecase.Interactor
@@ -89,13 +91,21 @@ func TestCollector_Collect(t *testing.T) {
 	)
 	u.SetTags("Tasks")
 
-	require.NoError(t, c.CollectUseCase(http.MethodPost, "/foo", u, rest.HandlerTrait{
-		ReqValidator: &jsonschema.Validator{},
-	}))
+	require.NoError(
+		t, c.CollectUseCase(
+			http.MethodPost, "/foo", u, rest.HandlerTrait{
+				ReqValidator: &jsonschema.Validator{},
+			},
+		),
+	)
 
-	require.NoError(t, c.CollectUseCase(http.MethodGet, "/foo", nil, rest.HandlerTrait{
-		ReqValidator: &jsonschema.Validator{},
-	}))
+	require.NoError(
+		t, c.CollectUseCase(
+			http.MethodGet, "/foo", nil, rest.HandlerTrait{
+				ReqValidator: &jsonschema.Validator{},
+			},
+		),
+	)
 
 	j, err := json.MarshalIndent(c.SpecSchema(), "", " ")
 	require.NoError(t, err)
@@ -147,7 +157,8 @@ func TestCollector_Collect_requestMapping(t *testing.T) {
 	require.NoError(t, collector.CollectUseCase(http.MethodPost, "/test/{in-path}", u, h))
 	require.NoError(t, collector.CollectUseCase(http.MethodPut, "/test/{in-path}", u, h))
 
-	assertjson.EqMarshal(t, `{
+	assertjson.EqMarshal(
+		t, `{
 	  "openapi":"3.0.3","info":{"title":"","version":""},
 	  "paths":{
 		"/test/{in-path}":{
@@ -219,7 +230,8 @@ func TestCollector_Collect_requestMapping(t *testing.T) {
 		  }
 		}
 	  }
-	}`, collector.SpecSchema())
+	}`, collector.SpecSchema(),
+	)
 
 	val := validatorMock{
 		AddSchemaFunc: func(_ rest.ParamIn, _ string, _ []byte, _ bool) error {
@@ -263,7 +275,8 @@ func TestCollector_Collect_CombineErrors(t *testing.T) {
 
 	require.NoError(t, collector.CollectUseCase(http.MethodPost, "/test", u, h))
 
-	assertjson.EqMarshal(t, `{
+	assertjson.EqMarshal(
+		t, `{
 	  "openapi":"3.0.3","info":{"title":"","version":""},
 	  "paths":{
 		"/test":{
@@ -317,7 +330,8 @@ func TestCollector_Collect_CombineErrors(t *testing.T) {
 		  }
 		}
 	  }
-	}`, collector.SpecSchema())
+	}`, collector.SpecSchema(),
+	)
 }
 
 // Output that implements OutputWithHTTPStatus interface.
@@ -341,11 +355,16 @@ func TestCollector_Collect_multipleHttpStatuses(t *testing.T) {
 	u.Input = new(struct{})
 	u.Output = new(outputWithHTTPStatuses)
 
-	require.NoError(t, c.CollectUseCase(http.MethodPost, "/foo", u, rest.HandlerTrait{
-		ReqValidator: &jsonschema.Validator{},
-	}))
+	require.NoError(
+		t, c.CollectUseCase(
+			http.MethodPost, "/foo", u, rest.HandlerTrait{
+				ReqValidator: &jsonschema.Validator{},
+			},
+		),
+	)
 
-	assertjson.EqMarshal(t, `{
+	assertjson.EqMarshal(
+		t, `{
 	  "openapi": "3.0.3",
 	  "info": {
 		"title": "",
@@ -393,7 +412,8 @@ func TestCollector_Collect_multipleHttpStatuses(t *testing.T) {
 		  }
 		}
 	  }
-	}`, c.SpecSchema())
+	}`, c.SpecSchema(),
+	)
 }
 
 func TestCollector_Collect_queryObject(t *testing.T) {
@@ -416,11 +436,16 @@ func TestCollector_Collect_queryObject(t *testing.T) {
 
 	u.Input = new(inputQueryObject)
 
-	require.NoError(t, c.CollectUseCase(http.MethodGet, "/foo", u, rest.HandlerTrait{
-		ReqValidator: &jsonschema.Validator{},
-	}))
+	require.NoError(
+		t, c.CollectUseCase(
+			http.MethodGet, "/foo", u, rest.HandlerTrait{
+				ReqValidator: &jsonschema.Validator{},
+			},
+		),
+	)
 
-	assertjson.EqMarshal(t, `{
+	assertjson.EqMarshal(
+		t, `{
 	  "openapi":"3.0.3","info":{"title":"","version":""},
 	  "paths":{
 		"/foo":{
@@ -459,7 +484,8 @@ func TestCollector_Collect_queryObject(t *testing.T) {
 		  "OpenapiTestJsonFilter":{"type":"object","properties":{"foo":{"type":"string"}}}
 		}
 	  }
-	}`, c.SpecSchema())
+	}`, c.SpecSchema(),
+	)
 }
 
 func TestCollector_Collect_head_no_response(t *testing.T) {
@@ -473,15 +499,24 @@ func TestCollector_Collect_head_no_response(t *testing.T) {
 
 	u.Output = new(resp)
 
-	require.NoError(t, c.CollectUseCase(http.MethodHead, "/foo", u, rest.HandlerTrait{
-		ReqValidator: &jsonschema.Validator{},
-	}))
+	require.NoError(
+		t, c.CollectUseCase(
+			http.MethodHead, "/foo", u, rest.HandlerTrait{
+				ReqValidator: &jsonschema.Validator{},
+			},
+		),
+	)
 
-	require.NoError(t, c.CollectUseCase(http.MethodGet, "/foo", u, rest.HandlerTrait{
-		ReqValidator: &jsonschema.Validator{},
-	}))
+	require.NoError(
+		t, c.CollectUseCase(
+			http.MethodGet, "/foo", u, rest.HandlerTrait{
+				ReqValidator: &jsonschema.Validator{},
+			},
+		),
+	)
 
-	assertjson.EqMarshal(t, `{
+	assertjson.EqMarshal(
+		t, `{
 	  "openapi":"3.0.3","info":{"title":"","version":""},
 	  "paths":{
 		"/foo":{
@@ -511,5 +546,6 @@ func TestCollector_Collect_head_no_response(t *testing.T) {
 		  "OpenapiTestResp":{"type":"object","properties":{"foo":{"type":"string"}}}
 		}
 	  }
-	}`, c.SpecSchema())
+	}`, c.SpecSchema(),
+	)
 }

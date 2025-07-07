@@ -3,7 +3,7 @@ package usecase
 import (
 	"context"
 
-	"github.com/swaggest/rest/_examples/task-api/internal/domain/task"
+	"github.com/boba-keyost/rest/_examples/task-api/internal/domain/task"
 	"github.com/swaggest/usecase"
 	"github.com/swaggest/usecase/status"
 )
@@ -11,10 +11,11 @@ import (
 // FindTask creates usecase interactor.
 func FindTask(
 	deps interface {
-		TaskFinder() task.Finder
-	},
+	TaskFinder() task.Finder
+},
 ) usecase.IOInteractor {
-	u := usecase.NewIOI(new(task.Identity), new(task.Entity),
+	u := usecase.NewIOI(
+		new(task.Identity), new(task.Entity),
 		func(ctx context.Context, input, output interface{}) error {
 			var (
 				in  = input.(*task.Identity)
@@ -25,7 +26,8 @@ func FindTask(
 			*out, err = deps.TaskFinder().FindByID(ctx, *in)
 
 			return err
-		})
+		},
+	)
 
 	u.SetDescription("Find task by ID.")
 	u.SetExpectedErrors(

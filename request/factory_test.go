@@ -12,37 +12,39 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/swaggest/jsonschema-go"
-	"github.com/swaggest/rest"
-	"github.com/swaggest/rest/request"
+	"github.com/boba-keyost/rest"
+	"github.com/boba-keyost/rest/request"
 )
 
 func TestDecoderFactory_SetDecoderFunc(t *testing.T) {
 	df := request.NewDecoderFactory()
-	df.SetDecoderFunc("jwt", func(r *http.Request) (url.Values, error) {
-		ah := r.Header.Get("Authorization")
-		if ah == "" || len(ah) < 8 || strings.ToLower(ah[0:7]) != "bearer " {
-			return nil, nil
-		}
-
-		var m map[string]json.RawMessage
-
-		err := json.Unmarshal([]byte(ah[7:]), &m)
-		if err != nil {
-			return nil, err
-		}
-
-		res := make(url.Values)
-
-		for k, v := range m {
-			if len(v) > 2 && v[0] == '"' && v[len(v)-1] == '"' {
-				v = v[1 : len(v)-1]
+	df.SetDecoderFunc(
+		"jwt", func(r *http.Request) (url.Values, error) {
+			ah := r.Header.Get("Authorization")
+			if ah == "" || len(ah) < 8 || strings.ToLower(ah[0:7]) != "bearer " {
+				return nil, nil
 			}
 
-			res[k] = []string{string(v)}
-		}
+			var m map[string]json.RawMessage
 
-		return res, err
-	})
+			err := json.Unmarshal([]byte(ah[7:]), &m)
+			if err != nil {
+				return nil, err
+			}
+
+			res := make(url.Values)
+
+			for k, v := range m {
+				if len(v) > 2 && v[0] == '"' && v[len(v)-1] == '"' {
+					v = v[1 : len(v)-1]
+				}
+
+				res[k] = []string{string(v)}
+			}
+
+			return res, err
+		},
+	)
 
 	type req struct {
 		Q    string `query:"q"`
@@ -70,31 +72,33 @@ func TestDecoderFactory_SetDecoderFunc(t *testing.T) {
 // BenchmarkDecoderFactory_SetDecoderFunc-4   	  577378	      1994 ns/op	    1024 B/op	      16 allocs/op.
 func BenchmarkDecoderFactory_SetDecoderFunc(b *testing.B) {
 	df := request.NewDecoderFactory()
-	df.SetDecoderFunc("jwt", func(r *http.Request) (url.Values, error) {
-		ah := r.Header.Get("Authorization")
-		if ah == "" || len(ah) < 8 || strings.ToLower(ah[0:7]) != "bearer " {
-			return nil, nil
-		}
-
-		// Pretending json.Unmarshal has passed to improve benchmark relevancy.
-		m := map[string]json.RawMessage{
-			"sub":  []byte(`"1234567890"`),
-			"name": []byte(`"John Doe"`),
-			"iat":  []byte(`1516239022`),
-		}
-
-		res := make(url.Values)
-
-		for k, v := range m {
-			if len(v) > 2 && v[0] == '"' && v[len(v)-1] == '"' {
-				v = v[1 : len(v)-1]
+	df.SetDecoderFunc(
+		"jwt", func(r *http.Request) (url.Values, error) {
+			ah := r.Header.Get("Authorization")
+			if ah == "" || len(ah) < 8 || strings.ToLower(ah[0:7]) != "bearer " {
+				return nil, nil
 			}
 
-			res[k] = []string{string(v)}
-		}
+			// Pretending json.Unmarshal has passed to improve benchmark relevancy.
+			m := map[string]json.RawMessage{
+				"sub":  []byte(`"1234567890"`),
+				"name": []byte(`"John Doe"`),
+				"iat":  []byte(`1516239022`),
+			}
 
-		return res, nil
-	})
+			res := make(url.Values)
+
+			for k, v := range m {
+				if len(v) > 2 && v[0] == '"' && v[len(v)-1] == '"' {
+					v = v[1 : len(v)-1]
+				}
+
+				res[k] = []string{string(v)}
+			}
+
+			return res, nil
+		},
+	)
 
 	type req struct {
 		Q    string `query:"q"`
@@ -185,21 +189,23 @@ func TestDecoderFactory_MakeDecoder_default(t *testing.T) {
 }
 
 func TestDecoderFactory_MakeDecoder_invalidMapping(t *testing.T) {
-	assert.PanicsWithValue(t, "non existent fields in mapping: ID2, WrongName", func() {
-		type MyInput struct {
-			ID   int    `default:"123"`
-			Name string `default:"foo"`
-		}
+	assert.PanicsWithValue(
+		t, "non existent fields in mapping: ID2, WrongName", func() {
+			type MyInput struct {
+				ID   int    `default:"123"`
+				Name string `default:"foo"`
+			}
 
-		df := request.NewDecoderFactory()
+			df := request.NewDecoderFactory()
 
-		customMapping := rest.RequestMapping{
-			rest.ParamInQuery:  map[string]string{"ID2": "id"},
-			rest.ParamInHeader: map[string]string{"WrongName": "X-Name"},
-		}
+			customMapping := rest.RequestMapping{
+				rest.ParamInQuery:  map[string]string{"ID2": "id"},
+				rest.ParamInHeader: map[string]string{"WrongName": "X-Name"},
+			}
 
-		_ = df.MakeDecoder(http.MethodPost, new(MyInput), customMapping)
-	})
+			_ = df.MakeDecoder(http.MethodPost, new(MyInput), customMapping)
+		},
+	)
 }
 
 func TestDecoderFactory_MakeDecoder_customMapping(t *testing.T) {
@@ -261,11 +267,17 @@ func TestDecoderFactory_MakeDecoder_header_case_sensitivity(t *testing.T) {
 
 	req.Header.Set("x-One-Two-threE", "hello!")
 
-	require.NoError(t, d.Decode(req, &v, rest.ValidatorFunc(func(_ rest.ParamIn, namedData map[string]interface{}) error {
-		fmt.Printf("%+v", namedData)
+	require.NoError(
+		t, d.Decode(
+			req, &v, rest.ValidatorFunc(
+				func(_ rest.ParamIn, namedData map[string]interface{}) error {
+					fmt.Printf("%+v", namedData)
 
-		return nil
-	})))
+					return nil
+				},
+			),
+		),
+	)
 	assert.Equal(t, "hello!", v.A)
 	assert.Equal(t, "hello!", v.B)
 	assert.Equal(t, "hello!", v.C)

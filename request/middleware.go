@@ -3,8 +3,8 @@ package request
 import (
 	"net/http"
 
-	"github.com/swaggest/rest"
-	"github.com/swaggest/rest/nethttp"
+	"github.com/boba-keyost/rest"
+	"github.com/boba-keyost/rest/nethttp"
 	"github.com/swaggest/usecase"
 )
 
@@ -85,7 +85,8 @@ func ValidatorMiddleware(factory rest.RequestValidatorFactory) func(http.Handler
 		rh := handlerTrait.RestHandler()
 
 		rh.ReqValidator = factory.MakeRequestValidator(
-			withRoute.RouteMethod(), useCaseWithInput.InputPort(), rh.ReqMapping)
+			withRoute.RouteMethod(), useCaseWithInput.InputPort(), rh.ReqMapping,
+		)
 
 		return handler
 	}

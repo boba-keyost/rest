@@ -5,7 +5,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	"github.com/swaggest/rest/nethttp"
+	"github.com/boba-keyost/rest/nethttp"
 )
 
 func TestMiddlewareIsWrapper(t *testing.T) {

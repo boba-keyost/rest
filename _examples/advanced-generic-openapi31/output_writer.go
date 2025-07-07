@@ -7,7 +7,7 @@ import (
 	"encoding/csv"
 	"net/http"
 
-	"github.com/swaggest/rest"
+	"github.com/boba-keyost/rest"
 	"github.com/swaggest/usecase"
 	"github.com/swaggest/usecase/status"
 )
@@ -23,20 +23,22 @@ func outputCSVWriter() usecase.Interactor {
 		ContentHash string `header:"If-None-Match" description:"Content hash."`
 	}
 
-	u := usecase.NewInteractor(func(ctx context.Context, in writerInput, out *writerOutput) (err error) {
-		contentHash := "abc123" // Pretending this is an actual content hash.
+	u := usecase.NewInteractor(
+		func(ctx context.Context, in writerInput, out *writerOutput) (err error) {
+			contentHash := "abc123" // Pretending this is an actual content hash.
 
-		if in.ContentHash == contentHash {
-			return rest.HTTPCodeAsError(http.StatusNotModified)
-		}
+			if in.ContentHash == contentHash {
+				return rest.HTTPCodeAsError(http.StatusNotModified)
+			}
 
-		out.Header = "abc"
-		out.ContentHash = contentHash
+			out.Header = "abc"
+			out.ContentHash = contentHash
 
-		c := csv.NewWriter(out)
+			c := csv.NewWriter(out)
 
-		return c.WriteAll([][]string{{"abc", "def", "hij"}, {"klm", "nop", "qrs"}})
-	})
+			return c.WriteAll([][]string{{"abc", "def", "hij"}, {"klm", "nop", "qrs"}})
+		},
+	)
 
 	u.SetTitle("Output With Stream Writer")
 	u.SetDescription("Output with stream writer.")

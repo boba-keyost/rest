@@ -7,9 +7,9 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"github.com/swaggest/rest"
-	"github.com/swaggest/rest/jsonschema"
-	"github.com/swaggest/rest/response"
+	"github.com/boba-keyost/rest"
+	"github.com/boba-keyost/rest/jsonschema"
+	"github.com/boba-keyost/rest/response"
 	"github.com/swaggest/usecase"
 )
 
@@ -34,11 +34,13 @@ func TestEncoder_SetupOutput(t *testing.T) {
 	}
 
 	validator := jsonschema.Validator{}
-	require.NoError(t, validator.AddSchema(
-		rest.ParamInHeader,
-		"X-Name",
-		[]byte(`{"type":"string","minLength":3}`),
-		false),
+	require.NoError(
+		t, validator.AddSchema(
+			rest.ParamInHeader,
+			"X-Name",
+			[]byte(`{"type":"string","minLength":3}`),
+			false,
+		),
 	)
 
 	ht.RespValidator = &validator
@@ -65,19 +67,23 @@ func TestEncoder_SetupOutput(t *testing.T) {
 	assert.Equal(t, http.StatusOK, w.Code)
 	assert.Equal(t, "Jane", w.Header().Get("X-Name"))
 	assert.Equal(t, "321", w.Header().Get("X-Foo"))
-	assert.Equal(t, []string{
-		"bar=baz",
-		"coo=123; Path=/foo; HttpOnly",
-		"coo2=true; Path=/foo; Max-Age=86400; HttpOnly; Secure; SameSite=Lax",
-	}, w.Header()["Set-Cookie"])
+	assert.Equal(
+		t, []string{
+			"bar=baz",
+			"coo=123; Path=/foo; HttpOnly",
+			"coo2=true; Path=/foo; Max-Age=86400; HttpOnly; Secure; SameSite=Lax",
+		}, w.Header()["Set-Cookie"],
+	)
 	assert.Equal(t, "application/x-vnd-json", w.Header().Get("Content-Type"))
 	assert.Equal(t, "32", w.Header().Get("Content-Length"))
 	assert.Equal(t, `{"items":["one","two","three"]}`+"\n", w.Body.String())
 
 	w = httptest.NewRecorder()
-	e.WriteErrResponse(w, r, http.StatusExpectationFailed, rest.ErrResponse{
-		ErrorText: "failed",
-	})
+	e.WriteErrResponse(
+		w, r, http.StatusExpectationFailed, rest.ErrResponse{
+			ErrorText: "failed",
+		},
+	)
 	assert.Equal(t, http.StatusExpectationFailed, w.Code)
 	assert.Equal(t, "application/json", w.Header().Get("Content-Type"))
 	assert.Equal(t, "19", w.Header().Get("Content-Length"))
@@ -90,8 +96,10 @@ func TestEncoder_SetupOutput(t *testing.T) {
 	assert.Equal(t, "", w.Header().Get("X-Name"))
 	assert.Equal(t, "application/json", w.Header().Get("Content-Type"))
 	assert.Equal(t, "140", w.Header().Get("Content-Length"))
-	assert.Equal(t, `{"status":"INTERNAL","error":"internal: bad response: validation failed",`+
-		`"context":{"header:X-Name":["#: length must be >= 3, but got 2"]}}`+"\n", w.Body.String())
+	assert.Equal(
+		t, `{"status":"INTERNAL","error":"internal: bad response: validation failed",`+
+			`"context":{"header:X-Name":["#: length must be >= 3, but got 2"]}}`+"\n", w.Body.String(),
+	)
 }
 
 func TestEncoder_SetupOutput_withWriter(t *testing.T) {
@@ -173,11 +181,13 @@ func TestEncoder_SetupOutput_nonPtr(t *testing.T) {
 	}
 
 	validator := jsonschema.Validator{}
-	require.NoError(t, validator.AddSchema(
-		rest.ParamInHeader,
-		"X-Name",
-		[]byte(`{"type":"string","minLength":3}`),
-		false),
+	require.NoError(
+		t, validator.AddSchema(
+			rest.ParamInHeader,
+			"X-Name",
+			[]byte(`{"type":"string","minLength":3}`),
+			false,
+		),
 	)
 
 	ht.RespValidator = &validator
@@ -259,11 +269,13 @@ func TestEmbeddedSetter_SetResponseWriter(t *testing.T) {
 	}
 
 	validator := jsonschema.Validator{}
-	require.NoError(t, validator.AddSchema(
-		rest.ParamInHeader,
-		"X-Name",
-		[]byte(`{"type":"string","minLength":3}`),
-		false),
+	require.NoError(
+		t, validator.AddSchema(
+			rest.ParamInHeader,
+			"X-Name",
+			[]byte(`{"type":"string","minLength":3}`),
+			false,
+		),
 	)
 
 	ht.RespValidator = &validator
@@ -290,11 +302,13 @@ func TestEmbeddedSetter_SetResponseWriter(t *testing.T) {
 	assert.Equal(t, http.StatusOK, w.Code)
 	assert.Equal(t, "Jane", w.Header().Get("X-Name"))
 	assert.Equal(t, "321", w.Header().Get("X-Foo"))
-	assert.Equal(t, []string{
-		"bar=baz",
-		"coo=123; Path=/foo; HttpOnly",
-		"coo2=true; Path=/foo; Max-Age=86400; HttpOnly; Secure; SameSite=Lax",
-	}, w.Header()["Set-Cookie"])
+	assert.Equal(
+		t, []string{
+			"bar=baz",
+			"coo=123; Path=/foo; HttpOnly",
+			"coo2=true; Path=/foo; Max-Age=86400; HttpOnly; Secure; SameSite=Lax",
+		}, w.Header()["Set-Cookie"],
+	)
 	assert.Equal(t, "application/x-vnd-json", w.Header().Get("Content-Type"))
 	assert.Equal(t, "32", w.Header().Get("Content-Length"))
 	assert.Equal(t, `{"items":["one","two","three"]}`+"\n", w.Body.String())

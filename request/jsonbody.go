@@ -8,7 +8,7 @@ import (
 	"net/http"
 	"sync"
 
-	"github.com/swaggest/rest"
+	"github.com/boba-keyost/rest"
 )
 
 var bufPool = sync.Pool{

@@ -13,7 +13,7 @@ import (
 	"github.com/swaggest/jsonschema-go"
 	"github.com/swaggest/openapi-go"
 	"github.com/swaggest/openapi-go/openapi3"
-	"github.com/swaggest/rest"
+	"github.com/boba-keyost/rest"
 	"github.com/swaggest/usecase"
 )
 
@@ -312,20 +312,24 @@ func (c *Collector) setupOutput(oc openapi.OperationContext, u usecase.Interacto
 
 	if outputWithStatus, ok := output.(rest.OutputWithHTTPStatus); ok {
 		for _, status := range outputWithStatus.ExpectedHTTPStatuses() {
-			oc.AddRespStructure(output, func(cu *openapi.ContentUnit) {
-				cu.HTTPStatus = status
-				setupCU(cu)
-			})
+			oc.AddRespStructure(
+				output, func(cu *openapi.ContentUnit) {
+					cu.HTTPStatus = status
+					setupCU(cu)
+				},
+			)
 		}
 	} else {
 		if h.SuccessStatus != 0 {
 			status = h.SuccessStatus
 		}
 
-		oc.AddRespStructure(output, func(cu *openapi.ContentUnit) {
-			cu.HTTPStatus = status
-			setupCU(cu)
-		})
+		oc.AddRespStructure(
+			output, func(cu *openapi.ContentUnit) {
+				cu.HTTPStatus = status
+				setupCU(cu)
+			},
+		)
 	}
 }
 
@@ -333,9 +337,11 @@ func (c *Collector) setupInput(oc openapi.OperationContext, u usecase.Interactor
 	var hasInput usecase.HasInputPort
 
 	if usecase.As(u, &hasInput) {
-		oc.AddReqStructure(hasInput.InputPort(), func(cu *openapi.ContentUnit) {
-			setFieldMapping(cu, h.ReqMapping)
-		})
+		oc.AddReqStructure(
+			hasInput.InputPort(), func(cu *openapi.ContentUnit) {
+				setFieldMapping(cu, h.ReqMapping)
+			},
+		)
 	}
 }
 
@@ -412,17 +418,19 @@ func (c *Collector) processUseCase(oc openapi.OperationContext, u usecase.Intera
 }
 
 func (c *Collector) setOCJSONResponse(oc openapi.OperationContext, output interface{}, statusCode int) {
-	oc.AddRespStructure(output, func(cu *openapi.ContentUnit) {
-		cu.HTTPStatus = statusCode
+	oc.AddRespStructure(
+		output, func(cu *openapi.ContentUnit) {
+			cu.HTTPStatus = statusCode
 
-		if described, ok := output.(jsonschema.Described); ok {
-			cu.Description = described.Description()
-		}
+			if described, ok := output.(jsonschema.Described); ok {
+				cu.Description = described.Description()
+			}
 
-		if output != nil {
-			cu.ContentType = c.DefaultErrorResponseContentType
-		}
-	})
+			if output != nil {
+				cu.ContentType = c.DefaultErrorResponseContentType
+			}
+		},
+	)
 }
 
 func (c *Collector) processOCExpectedErrors(oc openapi.OperationContext, u usecase.Interactor, h rest.HandlerTrait) {
@@ -464,14 +472,16 @@ func (c *Collector) processOCExpectedErrors(oc openapi.OperationContext, u useca
 
 		errsByCode[statusCode] = append(errsByCode[statusCode], errResp)
 
-		oc.AddRespStructure(errResp, func(cu *openapi.ContentUnit) {
-			cu.HTTPStatus = statusCode
-			cu.Description = description
+		oc.AddRespStructure(
+			errResp, func(cu *openapi.ContentUnit) {
+				cu.HTTPStatus = statusCode
+				cu.Description = description
 
-			if errResp != nil {
-				cu.ContentType = c.DefaultErrorResponseContentType
-			}
-		})
+				if errResp != nil {
+					cu.ContentType = c.DefaultErrorResponseContentType
+				}
+			},
+		)
 	}
 
 	c.combineOCErrors(oc, statusCodes, errsByCode)
@@ -490,8 +500,10 @@ func (c *Collector) combineOCErrors(oc openapi.OperationContext, statusCodes []i
 			case "anyOf":
 				c.setOCJSONResponse(oc, jsonschema.AnyOf(errResps...), statusCode)
 			default:
-				panic("oneOf/anyOf expected for openapi.Collector.CombineErrors, " +
-					c.CombineErrors + " received")
+				panic(
+					"oneOf/anyOf expected for openapi.Collector.CombineErrors, " +
+						c.CombineErrors + " received",
+				)
 			}
 		}
 	}
@@ -514,18 +526,20 @@ func (c *Collector) ProvideRequestJSONSchemas(
 
 	r := c.Refl()
 
-	err := r.WalkRequestJSONSchemas(method, cu, c.jsonSchemaCallback(validator, r), func(oc openapi.OperationContext) {
-		fv, ok := validator.(unknownFieldsValidator)
-		if !ok {
-			return
-		}
-
-		for _, in := range []openapi.In{openapi.InQuery, openapi.InCookie, openapi.InHeader} {
-			if oc.UnknownParamsAreForbidden(in) {
-				fv.ForbidUnknownParams(rest.ParamIn(in), true)
+	err := r.WalkRequestJSONSchemas(
+		method, cu, c.jsonSchemaCallback(validator, r), func(oc openapi.OperationContext) {
+			fv, ok := validator.(unknownFieldsValidator)
+			if !ok {
+				return
 			}
-		}
-	})
+
+			for _, in := range []openapi.In{openapi.InQuery, openapi.InCookie, openapi.InHeader} {
+				if oc.UnknownParamsAreForbidden(in) {
+					fv.ForbidUnknownParams(rest.ParamIn(in), true)
+				}
+			}
+		},
+	)
 
 	return err
 }
@@ -554,7 +568,10 @@ func (c *Collector) ProvideResponseJSONSchemas(
 	return err
 }
 
-func (c *Collector) jsonSchemaCallback(validator rest.JSONSchemaValidator, r openapi.Reflector) openapi.JSONSchemaCallback {
+func (c *Collector) jsonSchemaCallback(
+	validator rest.JSONSchemaValidator,
+	r openapi.Reflector,
+) openapi.JSONSchemaCallback {
 	return func(in openapi.In, paramName string, schema *jsonschema.SchemaOrBool, required bool) error {
 		loc := string(in) + "." + paramName
 		if loc == "body.body" {

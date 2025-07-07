@@ -8,8 +8,8 @@ import (
 	"github.com/stretchr/testify/require"
 	"github.com/swaggest/assertjson"
 	"github.com/swaggest/openapi-go/openapi3"
-	"github.com/swaggest/rest/nethttp"
-	"github.com/swaggest/rest/web"
+	"github.com/boba-keyost/rest/nethttp"
+	"github.com/boba-keyost/rest/web"
 	"github.com/swaggest/usecase"
 )
 
@@ -26,7 +26,8 @@ func TestRequestBodyContent(t *testing.T) {
 
 	require.NoError(t, r.AddOperation(oc))
 
-	assertjson.EqMarshal(t, `{
+	assertjson.EqMarshal(
+		t, `{
 	  "openapi":"3.0.3","info":{"title":"","version":""},
 	  "paths":{
 		"/":{
@@ -36,19 +37,23 @@ func TestRequestBodyContent(t *testing.T) {
 		  }
 		}
 	  }
-	}`, r.SpecSchema())
+	}`, r.SpecSchema(),
+	)
 }
 
 func TestRequestBodyContent_webService(t *testing.T) {
 	s := web.NewService(openapi3.NewReflector())
 
-	u := usecase.NewIOI(new(string), nil, func(_ context.Context, _, _ interface{}) error {
-		return nil
-	})
+	u := usecase.NewIOI(
+		new(string), nil, func(_ context.Context, _, _ interface{}) error {
+			return nil
+		},
+	)
 
 	s.Post("/text-req-body", u, nethttp.RequestBodyContent("text/csv"))
 
-	assertjson.EqMarshal(t, `{
+	assertjson.EqMarshal(
+		t, `{
 	  "openapi":"3.0.3","info":{"title":"","version":""},
 	  "paths":{
 		"/text-req-body":{
@@ -60,5 +65,6 @@ func TestRequestBodyContent_webService(t *testing.T) {
 		  }
 		}
 	  }
-	}`, s.OpenAPISchema())
+	}`, s.OpenAPISchema(),
+	)
 }

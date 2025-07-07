@@ -7,9 +7,9 @@ import (
 	"time"
 
 	"github.com/kelseyhightower/envconfig"
-	"github.com/swaggest/rest/_examples/task-api/internal/infra"
-	"github.com/swaggest/rest/_examples/task-api/internal/infra/nethttp"
-	"github.com/swaggest/rest/_examples/task-api/internal/infra/service"
+	"github.com/boba-keyost/rest/_examples/task-api/internal/infra"
+	"github.com/boba-keyost/rest/_examples/task-api/internal/infra/nethttp"
+	"github.com/boba-keyost/rest/_examples/task-api/internal/infra/service"
 )
 
 func main() {

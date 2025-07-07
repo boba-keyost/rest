@@ -11,8 +11,8 @@ import (
 	"github.com/stretchr/testify/require"
 	"github.com/swaggest/assertjson"
 	"github.com/swaggest/openapi-go/openapi3"
-	"github.com/swaggest/rest/nethttp"
-	"github.com/swaggest/rest/web"
+	"github.com/boba-keyost/rest/nethttp"
+	"github.com/boba-keyost/rest/web"
 	"github.com/swaggest/usecase"
 )
 
@@ -22,9 +22,11 @@ type albumID struct {
 }
 
 func albumByID() usecase.Interactor {
-	u := usecase.NewIOI(new(albumID), new(album), func(_ context.Context, _, _ interface{}) error {
-		return nil
-	})
+	u := usecase.NewIOI(
+		new(albumID), new(album), func(_ context.Context, _, _ interface{}) error {
+			return nil
+		},
+	)
 	u.SetTags("Album")
 
 	return u
@@ -51,29 +53,39 @@ func TestDefaultService(t *testing.T) {
 	service.Put("/albums", postAlbums(), nethttp.SuccessStatus(http.StatusCreated))
 	service.Trace("/albums", postAlbums(), nethttp.SuccessStatus(http.StatusCreated))
 	service.Options("/albums", postAlbums(), nethttp.SuccessStatus(http.StatusCreated))
-	service.Docs("/docs", func(_, _, _ string) http.Handler {
-		// Mount github.com/swaggest/swgui/v4emb.New here.
-		return http.HandlerFunc(func(_ http.ResponseWriter, _ *http.Request) {})
-	})
-
-	service.OnNotFound(usecase.NewIOI(
-		nil,
-		new(struct {
-			Foo string `json:"foo"`
-		}),
-		func(_ context.Context, _, _ interface{}) error {
-			return nil
-		}),
+	service.Docs(
+		"/docs", func(_, _, _ string) http.Handler {
+			// Mount github.com/swaggest/swgui/v4emb.New here.
+			return http.HandlerFunc(func(_ http.ResponseWriter, _ *http.Request) {})
+		},
 	)
 
-	service.OnMethodNotAllowed(usecase.NewIOI(
-		nil,
-		new(struct {
-			Foo string `json:"foo"`
-		}),
-		func(_ context.Context, _, _ interface{}) error {
-			return nil
-		}),
+	service.OnNotFound(
+		usecase.NewIOI(
+			nil,
+			new(
+				struct {
+					Foo string `json:"foo"`
+				},
+			),
+			func(_ context.Context, _, _ interface{}) error {
+				return nil
+			},
+		),
+	)
+
+	service.OnMethodNotAllowed(
+		usecase.NewIOI(
+			nil,
+			new(
+				struct {
+					Foo string `json:"foo"`
+				},
+			),
+			func(_ context.Context, _, _ interface{}) error {
+				return nil
+			},
+		),
 	)
 
 	service.Handle("/a/{id}", nethttp.NewHandler(albumByID()))

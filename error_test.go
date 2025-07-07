@@ -7,7 +7,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	"github.com/swaggest/rest"
+	"github.com/boba-keyost/rest"
 	"github.com/swaggest/usecase"
 	"github.com/swaggest/usecase/status"
 )
@@ -47,7 +47,8 @@ func TestErr(t *testing.T) {
 
 	j, jErr := json.Marshal(er)
 	assert.NoError(t, jErr)
-	assert.Equal(t,
+	assert.Equal(
+		t,
 		`{"status":"INVALID_ARGUMENT","error":"invalid argument: failed","context":{"hello":"world"}}`,
 		string(j),
 	)
@@ -83,8 +84,10 @@ func TestErr(t *testing.T) {
 	assert.Equal(t, "", er.StatusText)
 	assert.Equal(t, 0, er.AppCode)
 
-	assert.Panics(t, func() {
-		_, er := rest.Err(nil)
-		assert.NoError(t, er)
-	})
+	assert.Panics(
+		t, func() {
+			_, er := rest.Err(nil)
+			assert.NoError(t, er)
+		},
+	)
 }

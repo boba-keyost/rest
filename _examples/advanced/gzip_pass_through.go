@@ -3,7 +3,7 @@ package main
 import (
 	"context"
 
-	"github.com/swaggest/rest/gzip"
+	"github.com/boba-keyost/rest/gzip"
 	"github.com/swaggest/usecase"
 )
 
@@ -54,8 +54,10 @@ func directGzip() usecase.Interactor {
 		ID: 123,
 	}
 	for i := 0; i < 400; i++ {
-		rawData.Text = append(rawData.Text, "Quis autem vel eum iure reprehenderit, qui in ea voluptate velit esse, "+
-			"quam nihil molestiae consequatur, vel illum, qui dolorem eum fugiat, quo voluptas nulla pariatur?")
+		rawData.Text = append(
+			rawData.Text, "Quis autem vel eum iure reprehenderit, qui in ea voluptate velit esse, "+
+				"quam nihil molestiae consequatur, vel illum, qui dolorem eum fugiat, quo voluptas nulla pariatur?",
+		)
 	}
 
 	// Precompute compressed data container. Generally this step should be owned by a caching storage of data.
@@ -66,7 +68,8 @@ func directGzip() usecase.Interactor {
 		panic(err)
 	}
 
-	u := usecase.NewIOI(new(gzipPassThroughInput), new(gzipPassThroughOutput),
+	u := usecase.NewIOI(
+		new(gzipPassThroughInput), new(gzipPassThroughOutput),
 		func(ctx context.Context, input, output interface{}) error {
 			var (
 				in  = input.(*gzipPassThroughInput)
@@ -89,7 +92,8 @@ func directGzip() usecase.Interactor {
 			}
 
 			return nil
-		})
+		},
+	)
 
 	return u
 }

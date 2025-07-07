@@ -9,7 +9,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"github.com/swaggest/rest"
+	"github.com/boba-keyost/rest"
 )
 
 func Test_decodeJSONBody(t *testing.T) {

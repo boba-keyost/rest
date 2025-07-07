@@ -8,12 +8,12 @@ import (
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/swaggest/openapi-go"
 	"github.com/swaggest/openapi-go/openapi3"
-	"github.com/swaggest/rest"
-	"github.com/swaggest/rest/_examples/task-api/internal/infra/schema"
-	"github.com/swaggest/rest/_examples/task-api/internal/infra/service"
-	"github.com/swaggest/rest/_examples/task-api/internal/usecase"
-	"github.com/swaggest/rest/nethttp"
-	"github.com/swaggest/rest/web"
+	"github.com/boba-keyost/rest"
+	"github.com/boba-keyost/rest/_examples/task-api/internal/infra/schema"
+	"github.com/boba-keyost/rest/_examples/task-api/internal/infra/service"
+	"github.com/boba-keyost/rest/_examples/task-api/internal/usecase"
+	"github.com/boba-keyost/rest/nethttp"
+	"github.com/boba-keyost/rest/web"
 	swgui "github.com/swaggest/swgui/v5emb"
 )
 
@@ -36,43 +36,71 @@ func NewRouter(locator *service.Locator) http.Handler {
 	}
 
 	// Unrestricted access.
-	s.Route("/dev", func(r chi.Router) {
-		r.Use(nethttp.OpenAPIAnnotationsMiddleware(s.OpenAPICollector, func(oc openapi.OperationContext) error {
-			oc.SetTags("Dev Mode")
+	s.Route(
+		"/dev", func(r chi.Router) {
+			r.Use(
+				nethttp.OpenAPIAnnotationsMiddleware(
+					s.OpenAPICollector, func(oc openapi.OperationContext) error {
+						oc.SetTags("Dev Mode")
 
-			return nil
-		}))
-		r.Group(func(r chi.Router) {
-			r.Method(http.MethodPost, "/tasks", nethttp.NewHandler(usecase.CreateTask(locator),
-				nethttp.SuccessStatus(http.StatusCreated)))
-			r.Method(http.MethodPut, "/tasks/{id}", nethttp.NewHandler(usecase.UpdateTask(locator), ff))
-			r.Method(http.MethodGet, "/tasks/{id}", nethttp.NewHandler(usecase.FindTask(locator), ff))
-			r.Method(http.MethodGet, "/tasks", nethttp.NewHandler(usecase.FindTasks(locator)))
-			r.Method(http.MethodDelete, "/tasks/{id}", nethttp.NewHandler(usecase.FinishTask(locator), ff))
-		})
-	})
+						return nil
+					},
+				),
+			)
+			r.Group(
+				func(r chi.Router) {
+					r.Method(
+						http.MethodPost, "/tasks", nethttp.NewHandler(
+							usecase.CreateTask(locator),
+							nethttp.SuccessStatus(http.StatusCreated),
+						),
+					)
+					r.Method(http.MethodPut, "/tasks/{id}", nethttp.NewHandler(usecase.UpdateTask(locator), ff))
+					r.Method(http.MethodGet, "/tasks/{id}", nethttp.NewHandler(usecase.FindTask(locator), ff))
+					r.Method(http.MethodGet, "/tasks", nethttp.NewHandler(usecase.FindTasks(locator)))
+					r.Method(http.MethodDelete, "/tasks/{id}", nethttp.NewHandler(usecase.FinishTask(locator), ff))
+				},
+			)
+		},
+	)
 
 	// Endpoints with admin access.
-	s.Route("/admin", func(r chi.Router) {
-		r.Group(func(r chi.Router) {
-			r.Use(nethttp.OpenAPIAnnotationsMiddleware(s.OpenAPICollector, func(oc openapi.OperationContext) error {
-				oc.SetTags("Admin Mode")
+	s.Route(
+		"/admin", func(r chi.Router) {
+			r.Group(
+				func(r chi.Router) {
+					r.Use(
+						nethttp.OpenAPIAnnotationsMiddleware(
+							s.OpenAPICollector, func(oc openapi.OperationContext) error {
+								oc.SetTags("Admin Mode")
 
-				return nil
-			}))
-			r.Use(adminAuth, nethttp.HTTPBasicSecurityMiddleware(s.OpenAPICollector, "Admin", "Admin access"))
-			r.Method(http.MethodPut, "/tasks/{id}", nethttp.NewHandler(usecase.UpdateTask(locator), ff))
-		})
-	})
+								return nil
+							},
+						),
+					)
+					r.Use(adminAuth, nethttp.HTTPBasicSecurityMiddleware(s.OpenAPICollector, "Admin", "Admin access"))
+					r.Method(http.MethodPut, "/tasks/{id}", nethttp.NewHandler(usecase.UpdateTask(locator), ff))
+				},
+			)
+		},
+	)
 
 	// Endpoints with user access.
-	s.Route("/user", func(r chi.Router) {
-		r.Group(func(r chi.Router) {
-			r.Use(userAuth, nethttp.HTTPBasicSecurityMiddleware(s.OpenAPICollector, "User", "User access"))
-			r.Method(http.MethodPost, "/tasks", nethttp.NewHandler(usecase.CreateTask(locator),
-				nethttp.SuccessStatus(http.StatusCreated)))
-		})
-	})
+	s.Route(
+		"/user", func(r chi.Router) {
+			r.Group(
+				func(r chi.Router) {
+					r.Use(userAuth, nethttp.HTTPBasicSecurityMiddleware(s.OpenAPICollector, "User", "User access"))
+					r.Method(
+						http.MethodPost, "/tasks", nethttp.NewHandler(
+							usecase.CreateTask(locator),
+							nethttp.SuccessStatus(http.StatusCreated),
+						),
+					)
+				},
+			)
+		},
+	)
 
 	// Swagger UI endpoint at /docs.
 	s.Docs("/docs", swgui.New)

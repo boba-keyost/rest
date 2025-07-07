@@ -5,7 +5,7 @@ package main
 import (
 	"context"
 
-	"github.com/swaggest/rest/gzip"
+	"github.com/boba-keyost/rest/gzip"
 	"github.com/swaggest/usecase"
 )
 
@@ -56,8 +56,10 @@ func directGzip() usecase.Interactor {
 		ID: 123,
 	}
 	for i := 0; i < 400; i++ {
-		rawData.Text = append(rawData.Text, "Quis autem vel eum iure reprehenderit, qui in ea voluptate velit esse, "+
-			"quam nihil molestiae consequatur, vel illum, qui dolorem eum fugiat, quo voluptas nulla pariatur?")
+		rawData.Text = append(
+			rawData.Text, "Quis autem vel eum iure reprehenderit, qui in ea voluptate velit esse, "+
+				"quam nihil molestiae consequatur, vel illum, qui dolorem eum fugiat, quo voluptas nulla pariatur?",
+		)
 	}
 
 	// Precompute compressed data container. Generally this step should be owned by a caching storage of data.
@@ -68,25 +70,27 @@ func directGzip() usecase.Interactor {
 		panic(err)
 	}
 
-	u := usecase.NewInteractor(func(ctx context.Context, in gzipPassThroughInput, out *gzipPassThroughOutput) error {
-		if in.PlainStruct {
-			o := rawData
-			o.Header = "cba"
-			*out = o
-		} else {
-			o := dataFromCache
-			o.Header = "abc"
-			*out = o
-		}
+	u := usecase.NewInteractor(
+		func(ctx context.Context, in gzipPassThroughInput, out *gzipPassThroughOutput) error {
+			if in.PlainStruct {
+				o := rawData
+				o.Header = "cba"
+				*out = o
+			} else {
+				o := dataFromCache
+				o.Header = "abc"
+				*out = o
+			}
 
-		// Imitating an internal read operation on data in container.
-		if in.CountItems {
-			cnt := len((*out).gzipPassThroughStruct().Text)
-			println("items: ", cnt)
-		}
+			// Imitating an internal read operation on data in container.
+			if in.CountItems {
+				cnt := len((*out).gzipPassThroughStruct().Text)
+				println("items: ", cnt)
+			}
 
-		return nil
-	})
+			return nil
+		},
+	)
 	u.SetTags("Response")
 
 	return u

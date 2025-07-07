@@ -12,7 +12,7 @@ import (
 
 	"github.com/swaggest/form/v5"
 	"github.com/swaggest/refl"
-	"github.com/swaggest/rest"
+	"github.com/boba-keyost/rest"
 	"github.com/swaggest/usecase"
 	"github.com/swaggest/usecase/status"
 )
@@ -91,31 +91,35 @@ func (h *Encoder) setupHeadersEncoder(output interface{}, ht *rest.HandlerTrait)
 	if len(respHeaderMapping) == 0 && refl.HasTaggedFields(output, string(rest.ParamInHeader)) {
 		respHeaderMapping = make(map[string]string)
 
-		refl.WalkTaggedFields(reflect.ValueOf(output), func(_ reflect.Value, sf reflect.StructField, _ string) {
-			// Converting name to canonical form, while keeping omitempty and any other options.
-			t := sf.Tag.Get(string(rest.ParamInHeader))
-			parts := strings.Split(t, ",")
-			parts[0] = http.CanonicalHeaderKey(parts[0])
-			t = strings.Join(parts, ",")
+		refl.WalkTaggedFields(
+			reflect.ValueOf(output), func(_ reflect.Value, sf reflect.StructField, _ string) {
+				// Converting name to canonical form, while keeping omitempty and any other options.
+				t := sf.Tag.Get(string(rest.ParamInHeader))
+				parts := strings.Split(t, ",")
+				parts[0] = http.CanonicalHeaderKey(parts[0])
+				t = strings.Join(parts, ",")
 
-			respHeaderMapping[sf.Name] = t
-		}, string(rest.ParamInHeader))
+				respHeaderMapping[sf.Name] = t
+			}, string(rest.ParamInHeader),
+		)
 	}
 
 	if len(respHeaderMapping) > 0 {
 		enc := form.NewEncoder()
 		enc.SetMode(form.ModeExplicit)
-		enc.RegisterTagNameFunc(func(field reflect.StructField) string {
-			if name, ok := respHeaderMapping[field.Name]; ok {
-				return name
-			}
+		enc.RegisterTagNameFunc(
+			func(field reflect.StructField) string {
+				if name, ok := respHeaderMapping[field.Name]; ok {
+					return name
+				}
 
-			if field.Anonymous {
-				return ""
-			}
+				if field.Anonymous {
+					return ""
+				}
 
-			return "-"
-		})
+				return "-"
+			},
+		)
 
 		h.outputHeadersEncoder = enc
 	}
@@ -139,30 +143,34 @@ func (h *Encoder) setupContentTypeBodyEncoder(output interface{}) {
 	if refl.HasTaggedFields(output, tagName) {
 		mapping = make(map[string]string)
 
-		refl.WalkTaggedFields(reflect.ValueOf(output), func(_ reflect.Value, sf reflect.StructField, _ string) {
-			// Converting name to canonical form, while keeping omitempty and any other options.
-			t := sf.Tag.Get(tagName)
-			parts := strings.Split(t, ",")
-			t = strings.Join(parts, ",")
+		refl.WalkTaggedFields(
+			reflect.ValueOf(output), func(_ reflect.Value, sf reflect.StructField, _ string) {
+				// Converting name to canonical form, while keeping omitempty and any other options.
+				t := sf.Tag.Get(tagName)
+				parts := strings.Split(t, ",")
+				t = strings.Join(parts, ",")
 
-			mapping[sf.Name] = t
-		}, tagName)
+				mapping[sf.Name] = t
+			}, tagName,
+		)
 	}
 
 	if len(mapping) > 0 {
 		enc := form.NewEncoder()
 		enc.SetMode(form.ModeExplicit)
-		enc.RegisterTagNameFunc(func(field reflect.StructField) string {
-			if name, ok := mapping[field.Name]; ok {
-				return name
-			}
+		enc.RegisterTagNameFunc(
+			func(field reflect.StructField) string {
+				if name, ok := mapping[field.Name]; ok {
+					return name
+				}
 
-			if field.Anonymous {
-				return ""
-			}
+				if field.Anonymous {
+					return ""
+				}
 
-			return "-"
-		})
+				return "-"
+			},
+		)
 
 		h.outputContentTypeBodyEncoder = enc
 	}
@@ -185,45 +193,49 @@ func (h *Encoder) setupCookiesEncoder(output interface{}, ht *rest.HandlerTrait)
 		respCookieMapping = make(map[string]http.Cookie)
 		h.outputCookieBase = make([]http.Cookie, 0)
 
-		refl.WalkTaggedFields(reflect.ValueOf(output), func(_ reflect.Value, sf reflect.StructField, tag string) {
-			c := http.Cookie{
-				Name: tag,
-			}
-
-			options := strings.Split(sf.Tag.Get("cookie"), ",")[1:]
-			if len(options) > 0 {
-				resp := http.Response{}
-				resp.Header = make(http.Header)
-				resp.Header.Add("Set-Cookie", tag+"=x;"+strings.Join(options, ";"))
-
-				cc := resp.Cookies()
-				if len(cc) == 1 {
-					c = *cc[0]
+		refl.WalkTaggedFields(
+			reflect.ValueOf(output), func(_ reflect.Value, sf reflect.StructField, tag string) {
+				c := http.Cookie{
+					Name: tag,
 				}
-			}
 
-			c.Value = ""
-			c.Raw = ""
+				options := strings.Split(sf.Tag.Get("cookie"), ",")[1:]
+				if len(options) > 0 {
+					resp := http.Response{}
+					resp.Header = make(http.Header)
+					resp.Header.Add("Set-Cookie", tag+"=x;"+strings.Join(options, ";"))
 
-			h.outputCookieBase = append(h.outputCookieBase, c)
-			respCookieMapping[sf.Name] = c
-		}, string(rest.ParamInCookie))
+					cc := resp.Cookies()
+					if len(cc) == 1 {
+						c = *cc[0]
+					}
+				}
+
+				c.Value = ""
+				c.Raw = ""
+
+				h.outputCookieBase = append(h.outputCookieBase, c)
+				respCookieMapping[sf.Name] = c
+			}, string(rest.ParamInCookie),
+		)
 	}
 
 	if len(respCookieMapping) > 0 {
 		enc := form.NewEncoder()
 		enc.SetMode(form.ModeExplicit)
-		enc.RegisterTagNameFunc(func(field reflect.StructField) string {
-			if c, ok := respCookieMapping[field.Name]; ok {
-				return c.Name
-			}
+		enc.RegisterTagNameFunc(
+			func(field reflect.StructField) string {
+				if c, ok := respCookieMapping[field.Name]; ok {
+					return c.Name
+				}
 
-			if field.Anonymous {
-				return ""
-			}
+				if field.Anonymous {
+					return ""
+				}
 
-			return "-"
-		})
+				return "-"
+			},
+		)
 
 		h.outputCookiesEncoder = enc
 	}
@@ -516,7 +528,12 @@ func (h *Encoder) writeHeader(w http.ResponseWriter, r *http.Request, output int
 	return true
 }
 
-func (h *Encoder) writeRawResponse(w http.ResponseWriter, r *http.Request, output interface{}, ht rest.HandlerTrait) bool {
+func (h *Encoder) writeRawResponse(
+	w http.ResponseWriter,
+	r *http.Request,
+	output interface{},
+	ht rest.HandlerTrait,
+) bool {
 	values, err := h.outputContentTypeBodyEncoder.Encode(output)
 	if err != nil {
 		h.writeError(err, w, r, ht)
@@ -584,12 +601,14 @@ func (h *Encoder) MakeOutput(w http.ResponseWriter, ht rest.HandlerTrait) interf
 	if h.outputWithWriter {
 		if withWriter, ok := output.(usecase.OutputWithWriter); ok {
 			if h.outputHeadersEncoder != nil || ht.SuccessContentType != "" {
-				withWriter.SetWriter(&writerWithHeaders{
-					ResponseWriter: w,
-					responseWriter: h,
-					trait:          ht,
-					output:         output,
-				})
+				withWriter.SetWriter(
+					&writerWithHeaders{
+						ResponseWriter: w,
+						responseWriter: h,
+						trait:          ht,
+						output:         output,
+					},
+				)
 			} else {
 				withWriter.SetWriter(w)
 			}

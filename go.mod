@@ -1,4 +1,4 @@
-module github.com/swaggest/rest
+module github.com/boba-keyost/rest
 
 go 1.17
 

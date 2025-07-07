@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/swaggest/rest/_examples/task-api/internal/domain/task"
+	"github.com/boba-keyost/rest/_examples/task-api/internal/domain/task"
 	"github.com/swaggest/usecase"
 	"github.com/swaggest/usecase/status"
 )
@@ -12,19 +12,21 @@ import (
 // FindTasks creates usecase interactor.
 func FindTasks(
 	deps interface {
-		TaskFinder() task.Finder
-	},
+	TaskFinder() task.Finder
+},
 ) usecase.IOInteractor {
-	u := usecase.NewIOI(nil, new([]task.Entity), func(ctx context.Context, input, output interface{}) error {
-		out, ok := output.(*[]task.Entity)
-		if !ok {
-			return fmt.Errorf("%w: unexpected output type %T", status.Unimplemented, output)
-		}
+	u := usecase.NewIOI(
+		nil, new([]task.Entity), func(ctx context.Context, input, output interface{}) error {
+			out, ok := output.(*[]task.Entity)
+			if !ok {
+				return fmt.Errorf("%w: unexpected output type %T", status.Unimplemented, output)
+			}
 
-		*out = deps.TaskFinder().Find(ctx)
+			*out = deps.TaskFinder().Find(ctx)
 
-		return nil
-	})
+			return nil
+		},
+	)
 
 	u.SetDescription("Find all tasks.")
 	u.Output = new([]task.Entity)

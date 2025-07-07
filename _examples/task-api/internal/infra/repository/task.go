@@ -8,7 +8,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/swaggest/rest/_examples/task-api/internal/domain/task"
+	"github.com/boba-keyost/rest/_examples/task-api/internal/domain/task"
 	"github.com/swaggest/usecase"
 	"github.com/swaggest/usecase/status"
 )
@@ -60,9 +60,11 @@ func (tr *Task) Find(ctx context.Context) []task.Entity {
 		result = append(result, t)
 	}
 
-	sort.Slice(result, func(i, j int) bool {
-		return result[i].ID < result[j].ID
-	})
+	sort.Slice(
+		result, func(i, j int) bool {
+			return result[i].ID < result[j].ID
+		},
+	)
 
 	return result
 }
