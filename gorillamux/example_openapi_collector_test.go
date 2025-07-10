@@ -7,8 +7,8 @@ import (
 	"strconv"
 
 	"github.com/gorilla/mux"
-	"github.com/swaggest/openapi-go"
-	"github.com/swaggest/openapi-go/openapi3"
+	"github.com/boba-keyost/openapi-go"
+	"github.com/boba-keyost/openapi-go/openapi3"
 	"github.com/boba-keyost/rest"
 	"github.com/boba-keyost/rest/gorillamux"
 	"github.com/boba-keyost/rest/nethttp"

@@ -10,7 +10,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/swaggest/assertjson"
-	"github.com/swaggest/openapi-go/openapi3"
+	"github.com/boba-keyost/openapi-go/openapi3"
 	"github.com/boba-keyost/rest/nethttp"
 	"github.com/boba-keyost/rest/web"
 	"github.com/swaggest/usecase"

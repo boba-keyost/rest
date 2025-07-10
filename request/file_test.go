@@ -12,7 +12,7 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"github.com/swaggest/openapi-go/openapi3"
+	"github.com/boba-keyost/openapi-go/openapi3"
 	"github.com/boba-keyost/rest"
 	"github.com/boba-keyost/rest/chirouter"
 	"github.com/boba-keyost/rest/jsonschema"

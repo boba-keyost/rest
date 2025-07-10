@@ -6,8 +6,8 @@ import (
 	"net/http"
 
 	"github.com/swaggest/assertjson"
-	oapi "github.com/swaggest/openapi-go"
-	"github.com/swaggest/openapi-go/openapi3"
+	oapi "github.com/boba-keyost/openapi-go"
+	"github.com/boba-keyost/openapi-go/openapi3"
 	"github.com/boba-keyost/rest/nethttp"
 	"github.com/boba-keyost/rest/web"
 	"github.com/swaggest/usecase"

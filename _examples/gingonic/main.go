@@ -10,8 +10,8 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/swaggest/jsonschema-go"
-	"github.com/swaggest/openapi-go"
-	"github.com/swaggest/openapi-go/openapi3"
+	"github.com/boba-keyost/openapi-go"
+	"github.com/boba-keyost/openapi-go/openapi3"
 )
 
 func OpenAPICtx(c *gin.Context) openapi.OperationContext {
@@ -58,22 +58,28 @@ func OpenAPICollect(refl openapi.Reflector, routes gin.RoutesInfo) error {
 			if len(pathItems) > 0 {
 				req := jsonschema.Struct{}
 				for _, p := range pathItems {
-					req.Fields = append(req.Fields, jsonschema.Field{
-						Name:  "F" + p,
-						Tag:   reflect.StructTag(`path:"` + p + `"`),
-						Value: "",
-					})
+					req.Fields = append(
+						req.Fields, jsonschema.Field{
+							Name:  "F" + p,
+							Tag:   reflect.StructTag(`path:"` + p + `"`),
+							Value: "",
+						},
+					)
 				}
 
 				oc.AddReqStructure(req)
 			}
 
-			oc.SetDescription("Information about this operation was obtained using only HTTP method and path pattern. " +
-				"It may be incomplete and/or inaccurate.")
+			oc.SetDescription(
+				"Information about this operation was obtained using only HTTP method and path pattern. " +
+					"It may be incomplete and/or inaccurate.",
+			)
 			oc.SetTags("Incomplete")
-			oc.AddRespStructure(nil, func(cu *openapi.ContentUnit) {
-				cu.ContentType = "text/html"
-			})
+			oc.AddRespStructure(
+				nil, func(cu *openapi.ContentUnit) {
+					cu.ContentType = "text/html"
+				},
+			)
 		}
 
 		if err := refl.AddOperation(oc); err != nil {
@@ -162,13 +168,17 @@ func getAlbumByID(c *gin.Context) {
 	if oc := OpenAPICtx(c); oc != nil {
 		oc.SetSummary("Get album")
 		oc.SetTags("Albums")
-		oc.AddReqStructure(struct {
-			ID string `path:"id"`
-		}{})
+		oc.AddReqStructure(
+			struct {
+				ID string `path:"id"`
+			}{},
+		)
 		oc.AddRespStructure(album{})
-		oc.AddRespStructure(struct {
-			Message string `json:"message"`
-		}{}, openapi.WithHTTPStatus(http.StatusNotFound))
+		oc.AddRespStructure(
+			struct {
+				Message string `json:"message"`
+			}{}, openapi.WithHTTPStatus(http.StatusNotFound),
+		)
 	}
 
 	id := c.Param("id")

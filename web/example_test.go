@@ -6,7 +6,7 @@ import (
 	"net/http"
 
 	"github.com/go-chi/chi/v5/middleware"
-	"github.com/swaggest/openapi-go/openapi3"
+	"github.com/boba-keyost/openapi-go/openapi3"
 	"github.com/boba-keyost/rest/nethttp"
 	"github.com/boba-keyost/rest/web"
 	"github.com/swaggest/usecase"

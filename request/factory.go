@@ -12,7 +12,7 @@ import (
 
 	"github.com/swaggest/form/v5"
 	"github.com/swaggest/jsonschema-go"
-	"github.com/swaggest/openapi-go"
+	"github.com/boba-keyost/openapi-go"
 	"github.com/swaggest/refl"
 	"github.com/boba-keyost/rest"
 	"github.com/boba-keyost/rest/nethttp"

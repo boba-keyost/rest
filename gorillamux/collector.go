@@ -6,7 +6,7 @@ import (
 
 	"github.com/gorilla/mux"
 	"github.com/swaggest/jsonschema-go"
-	oapi "github.com/swaggest/openapi-go"
+	oapi "github.com/boba-keyost/openapi-go"
 	"github.com/boba-keyost/rest/nethttp"
 	"github.com/boba-keyost/rest/openapi"
 )
