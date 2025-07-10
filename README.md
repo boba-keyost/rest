@@ -319,7 +319,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/boba-keyost/openapi-go/openapi31"
+	"github.com/swaggest/openapi-go/openapi31"
 	"github.com/boba-keyost/rest/response/gzip"
 	"github.com/boba-keyost/rest/web"
 	swgui "github.com/swaggest/swgui/v5emb"

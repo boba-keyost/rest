@@ -7,8 +7,8 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
-	oapi "github.com/boba-keyost/openapi-go"
-	"github.com/boba-keyost/openapi-go/openapi3"
+	oapi "github.com/swaggest/openapi-go"
+	"github.com/swaggest/openapi-go/openapi3"
 	"github.com/boba-keyost/rest"
 	"github.com/boba-keyost/rest/chirouter"
 	"github.com/boba-keyost/rest/jsonschema"

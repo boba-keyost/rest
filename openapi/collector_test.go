@@ -14,7 +14,7 @@ import (
 	"github.com/stretchr/testify/require"
 	"github.com/swaggest/assertjson"
 	jschema "github.com/swaggest/jsonschema-go"
-	"github.com/boba-keyost/openapi-go/openapi3"
+	"github.com/swaggest/openapi-go/openapi3"
 	"github.com/boba-keyost/rest"
 	"github.com/boba-keyost/rest/jsonschema"
 	"github.com/boba-keyost/rest/openapi"

@@ -66,7 +66,7 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	jwtauth "github.com/go-chi/jwtauth/v5"
-	"github.com/boba-keyost/openapi-go/openapi31"
+	"github.com/swaggest/openapi-go/openapi31"
 	"github.com/boba-keyost/rest/nethttp"
 	"github.com/boba-keyost/rest/web"
 	"github.com/swaggest/usecase"
