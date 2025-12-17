@@ -31,4 +31,4 @@ require (
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
 
-replace github.com/swaggest/openapi-go => github.com/boba-keyost/openapi-go v0.0.0-20250710192025-6e8fab0dd954
+replace github.com/swaggest/openapi-go => github.com/boba-keyost/openapi-go v0.0.0-20251217150220-f7d205e316ab
